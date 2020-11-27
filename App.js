@@ -6,6 +6,7 @@ import {FirebaseProvider} from './src/Context/FirebaseContext';
 import AppStackScreens from './src/Stacks/AppStackScreens';
 
 
+
 // You can import from local files
 import { NavigationContainer } from '@react-navigation/native';
 

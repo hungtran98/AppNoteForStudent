@@ -138,7 +138,8 @@ export default function SignUpScreen({ navigation }) {
         duraton="500">
         <Text style={{ fontWeight: 'bold' }}> User name</Text>
         <View style={styles.action}>
-          <FontAwesome name="user-o" color=" grey" size={20} />
+          <FontAwesome name="user-o" color=" #b3cccc" size={20} />
+          
           <TextInput
             placeholder="Example"
             placeholderTextColor="#666666"
@@ -151,7 +152,7 @@ export default function SignUpScreen({ navigation }) {
 
         <Text style={{ fontWeight: 'bold', marginTop: 20 }}>Email</Text>
         <View style={styles.action}>
-          <Feather name="mail" color="grey" size={20} />
+          <Feather name="mail" color="#b3cccc" size={20} />
 
           <TextInput
             placeholder="Your Email"

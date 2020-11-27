@@ -85,7 +85,7 @@
               <View style={styles.action}>
                     <FontAwesome 
                         name="user-o"
-                        color=' grey'
+                        color='#94b8b8'
                         size={20}
                     />
                     <TextInput 
@@ -109,7 +109,7 @@
               <View style={styles.action}>
                   <Feather 
                       name="lock"
-                      color= 'grey'
+                      color= '#94b8b8'
                       size={20}
                   />
                 

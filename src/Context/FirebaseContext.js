@@ -136,29 +136,13 @@ const Firebase = {
   },
 
 
-  //test function getEvents
-  getEvents: async (_iduser) => {
-    try{
-     // return uid;
-     console.log('uid', _iduser)
 
-     
-     //const events = await db.collection('events').doc("A1phEcH2wGgaX2P9DL8Q").get()
-
-      const events = await db.collection('events').where("userid","==",_iduser)
+  
 
 
-     // const events = await db.collection('events').where("_iduser","=","VNWBGwJgk5NXfirdutsHuje6Uka2").get();
-    //  console.log("aaaa",events)
+  
 
-        if(events.exists){
-          return events.data();
-        }
-    }
-    catch(error){
-      console.log("Error @getEvents: ", error);
-    }
-  },
+  
 
 
 

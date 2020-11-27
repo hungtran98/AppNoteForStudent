@@ -1,9 +1,13 @@
 import React, {useState, useContext, useEffect} from 'react';
-import {View, TouchableOpacity, Text} from 'react-native';
+import {View, TouchableOpacity, Text, ActivityIndicator, SafeAreaView, Modal} from 'react-native';
 import {Agenda, Calendar} from 'react-native-calendars';
 //import { Avatar} from 'react-native-paper';
 import { Container, Header, Content, Card, CardItem, Body, Avatar } from "native-base";
-import dataref from "../../tempData";
+import { AntDesign } from '@expo/vector-icons';
+import AddEventModal from '../Components/AddEventModal'
+//import dataref from "../../tempData";
+import firebase from 'firebase';
+import "firebase/firestore";
 
 //
 import {FirebaseContext} from '../Context/FirebaseContext';
@@ -17,64 +21,83 @@ const timeToString = (time) => {
 
 
 export default function HomeScreen ({navigation}) {
-  const [items, setItems] = useState(
-    // uid: "sfjakjhkdnsbnb",
-    // '2020-11-13': [{name: 'Billie Erilish', color: "#5cd859"}],
-    // '2020-11-14': [{name: 'Annie Marie', height: 80, color: '#24a69d'}],
-    // '2020-11-15': [],
-    // '2020-11-16': [{name: 'Justin Bibier', color:"#595bd9"}, {name: 'Selena Gomez', color:"#8022d9"}],
-    // '2020-11-17': [{name: 'Dj Snake', color: "#d85963"}],
+  const [items, setItems] = useState({});
 
-dataref
-);
+  const [addEvent, setAddEvent] = useState(false);
 
- const [result, setResult] = useState(null);
+  const [list, setList] = useState([])
 
-// const data = [
-
-//   {
-//       id: '1',
-//       uid: '01',
-//       date: "2020-11-18",
-//       name: "to do 1",
-//       color:"#5cd859"
-//   },
-//   {
-//     id: '4',
-//     uid: '01',
-//     date: "2020-11-20",
-//     name: "to do 45",
-//     color:"#d85963"
-// },]
-
-const  firebaseoj = React.useContext(FirebaseContext);
-const [_, setUser] = React.useContext(UserContext);
+  
+  const  firebaseoj = React.useContext(FirebaseContext);
+  const [_, setUser] = React.useContext(UserContext);
 
 
-// useEffect( async ()=> {
+
+
+useEffect(()=>{
+  setTimeout(async () => {
+    const _iduser = _.uid
+    firebase.firestore().collection("events").where("userid", "==",_iduser)
+    .onSnapshot(function(querySnapshot)  {
+        var listEvents = [];
+        querySnapshot.forEach(function(doc) {
+            listEvents.push({ id:doc.id,...doc.data()} )
+        });
+      
+      
+       // return listEvents convert [] to {}
+
+        var data = listEvents;
+          let items1
+          let dates = []
+          let arrayDate = []
+          
+
+          data.forEach(item => {
+              dates.push(item.date)
+          })
+
+          dates.map(d => {
+              let arrayName = []
+              
+              data.map(item => {
+                  if (item.date === d) {
+                      
+                      
+                      let objsDate={}
+                      objsDate.name = (item.name)
+                      objsDate.color = (item.color)
+                      // obj.name = (item.name)
+                      arrayName.push(objsDate)
+
+                      arrayDate[d] = arrayName
+                  }
+              })
+          })
+          items1 = { uid: _iduser, ...arrayDate }
+
+      
+          setItems(items1)
+         // setLoading(false)
+            
+    });
+  },500)},[])
 
 
   
-//     const userid = _.uid;
-//     const listEvents = await  firebaseoj.getEvents(userid);
-//     //console.log(listEvents);
-    
-//   }
+//  const addList = () => {
+//    const _iduser = _.uid
+//    firebase.firestore().collection("events").add({
+//     id: "7",
+//     userid: _iduser,
+//     date: "2020-11-30",
+//     name: "to do 7",
+//     color: "red"
+//    })
+//  }
 
-// ,[]); 
+  
 
-
-
-
-
-
-
-
-//listEvents[
-          // dayEvents: [{ title },{ color },{ time }...,{}], 
-          // dayEvents: [{},{},{}...,{}],  
-          // dayEvents: [{},{},{}...,{}],
-// ]  
   const getDay = new Date();
   const currenrDay =   getDay.getDate();
   const currenrMoth = getDay.getMonth()+1;
@@ -82,60 +105,21 @@ const [_, setUser] = React.useContext(UserContext);
   const fulldate = currenrYear+"-"+currenrMoth+"-"+currenrDay;
   
 
+
+  const tonggleAddEvent =()=>{
+    setAddEvent(!addEvent)
+  }
   
  
 
   
-  // const loadItems = (day) => {
-  //   setTimeout(() => {
-  //     for (let i = -15; i < 85; i++) {
-  //       const time = day.timestamp + i * 24 * 60 * 60 * 1000;
-  //       const strTime = timeToString(time);
-  //       if (!items[strTime]) {
-  //         items[strTime] = [];
-  //         const numItems = Math.floor(Math.random() * 3 + 1);
-  //         for (let j = 0; j < numItems; j++) {
-  //           items[strTime].push({
-  //             name: 'WorkShop in Ichita: ' + strTime + ' #' + j,
-  //             height: Math.max(50, Math.floor(Math.random() * 150)),
-  //           });
-  //         }
-  //       }
-  //     }
-  //     const newItems = {};
-  //     Object.keys(items).forEach((key) => {
-  //       newItems[key] = items[key];
-  //     });
-  //     setItems(newItems);
-  //   }, 1000);
-  // };
-  
   const loadItems = (day) => {
-    console.log(day);
-
     setTimeout(() => {
       for (let i = -15; i < 85; i++) {
         const time = day.timestamp + i * 24 * 60 * 60 * 1000;
         const strTime = timeToString(time);
-            
-
-        
         if (!items[strTime]) {
-          items[strTime] = [];
-         
-
-          //----dung de render random list item
-          //tra ve so N tu 1-2
-          // const numItems = Math.floor(Math.random() * 2 + 1);
-          // for (let j = 0; j < numItems; j++) {
-          //   items[strTime].push({
-          //     name: 'WorkShop in Ichita: ' + strTime + ' #' + j,
-          //     height: Math.max(50, Math.floor(Math.random() * 150)),
-          //     today: strTime,
-          //   });
-            
-          // }
-          //--------
+          items[strTime] = [];   
         }
       }
       const newItems = {};
@@ -148,31 +132,17 @@ const [_, setUser] = React.useContext(UserContext);
 
   const renderItem = (item) => {
     return (
-      // <TouchableOpacity style={{marginRight: 10, marginTop: 17, }} onPress={()=>{alert("pressed")}}>
+
       
-        // <Card>
-        //   <Card.Content>
-            // <View
-              // style={{
-              //   flexDirection: 'row',
-              //   justifyContent: 'space-between',
-              //   alignItems: 'center',
-              //   borderWidth: 2
-                
-              // }}>
-            //    <Text style={{marginBottom:20}}>{item.name}</Text>
-              
-            //   <Avatar.Text style={{width:40, height: 40}} />
-            // </View>
-        //   </Card.Content>
-        // </Card>
        <Content padder>
+         
           <Card style={{borderRadius: 10, marginBottom:-9, height:80}}>
-            <CardItem style={{height: 80,borderRadius: 10, backgroundColor: item.color    }} button onPress={() => alert(items.uid)}>
+            <CardItem style={{height: 80,borderRadius: 10, backgroundColor: item.color    }} button >
             <Body>
               <Text style={{marginBottom:10, fontSize:10, fontWeight:'bold', color: 'white'}}>{item.name}</Text>
               <Text style={{fontSize:10, color: 'white'}}>{items.uid}</Text>
       
+
 
               
             </Body>
@@ -181,28 +151,41 @@ const [_, setUser] = React.useContext(UserContext);
             </CardItem>
           </Card>
         </Content>
-     // </TouchableOpacity>
-  //     </View>
-  // </View>
+
+      
     );
   };
 
+
+
+ 
   return (
+  <SafeAreaView style={{flex:1}}>
     
-    <View style={{flex: 1}}>
+    <Modal animationType="slide" visible={addEvent} onRequestClose={()=>tonggleAddEvent()}>
+    
+      <AddEventModal closeModal={()=>tonggleAddEvent()} />
+    </Modal>
+     <View style={{backgroundColor:"#f0f5f5", height:35}}>
+        <TouchableOpacity style={{backgroundColor:"#694fad", height:30, width:30, alignItems:"center", justifyContent:"center",
+      marginLeft:180, marginTop:5, borderRadius:30, borderWidth:2, borderColor:"#fff"}} 
+      onPress={()=>tonggleAddEvent()}>
+          <Text style={{color:"#fff", fontWeight:"bold", alignItems:"center"}}>+</Text>
+        </TouchableOpacity>
+
+    </View>
+    
+   
       <Agenda
        items={items}
     
         loadItemsForMonth={loadItems}
-          onDayPress={(day)=>{console.log('day pressed')}}
+        //onDayPress={(day)=>{console.log('day pressed')}}
 
 
         selected={fulldate}
         renderItem={renderItem}
-          
-        
-        
-       
+
         markedDates={{
            fulldate: {selected: true, marked: true},
         }}
@@ -217,7 +200,8 @@ const [_, setUser] = React.useContext(UserContext);
          style={{backgroundColor:'yellow'}}
       
       />
-  </View>
+
+</SafeAreaView>
     
   );
 }

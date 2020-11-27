@@ -8,21 +8,21 @@ const data = [
     {
         id: '1',
         uid: '01',
-        date: "2020-11-18",
+        date: "2020-11-19",
         name: "to do 1",
         color:"#5cd859"
     },
     {
         id: '2',
         uid: '01',
-        date: "2020-11-18",
+        date: "2020-11-19",
         name: "to do 2",
         color:"#24a69d"
     },
      {
         id: '3',
         uid: '01',
-        date: "2020-11-18",
+        date: "2020-11-19",
         name: "to do 3",
         color:"#595bd9"
         
@@ -30,7 +30,7 @@ const data = [
     {
         id: '4',
         uid: '01',
-        date: "2020-11-20",
+        date: "2020-11-21",
         name: "to do 45",
         color:"#d85963"
     },
