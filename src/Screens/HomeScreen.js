@@ -2,9 +2,11 @@ import React, {useState, useContext, useEffect} from 'react';
 import {View, TouchableOpacity, Text, ActivityIndicator, SafeAreaView, Modal} from 'react-native';
 import {Agenda, Calendar} from 'react-native-calendars';
 //import { Avatar} from 'react-native-paper';
-import { Container, Header, Content, Card, CardItem, Body, Avatar } from "native-base";
+import { Container, Header, Content, Card, SwipeRow, CardItem, Body, Button, Avatar, Icon } from "native-base";
 import { AntDesign } from '@expo/vector-icons';
 import AddEventModal from '../Components/AddEventModal'
+import AddNoteModal from '../Components/Addnote'
+
 //import dataref from "../../tempData";
 import firebase from 'firebase';
 import "firebase/firestore";
@@ -24,14 +26,16 @@ export default function HomeScreen ({navigation}) {
   const [items, setItems] = useState({});
 
   const [addEvent, setAddEvent] = useState(false);
+  //const [updateEvent, setUpdateEvent] = useState(false)
+  
+   
+  
 
   const [list, setList] = useState([])
 
   
   const  firebaseoj = React.useContext(FirebaseContext);
   const [_, setUser] = React.useContext(UserContext);
-
-
 
 
 useEffect(()=>{
@@ -67,7 +71,10 @@ useEffect(()=>{
                       let objsDate={}
                       objsDate.name = (item.name)
                       objsDate.color = (item.color)
-                      // obj.name = (item.name)
+                      objsDate.date= (item.date)
+                      objsDate.id= (item.id)
+                      objsDate.timestart = (item.timestart)
+                      objsDate.timeend = (item.timeend)
                       arrayName.push(objsDate)
 
                       arrayDate[d] = arrayName
@@ -98,18 +105,31 @@ useEffect(()=>{
 
   
 
-  const getDay = new Date();
-  const currenrDay =   getDay.getDate();
-  const currenrMoth = getDay.getMonth()+1;
-  const currenrYear =  getDay.getFullYear();
-  const fulldate = currenrYear+"-"+currenrMoth+"-"+currenrDay;
-  
+const getDay = new Date();
+const currenrDay =   '0'+getDay.getDate();
+const currenrMoth = getDay.getMonth()+1;
+const currenrMoth1 = '0'+currenrMoth
+const currenrYear =  getDay.getFullYear();
+const fulldate = currenrYear+"-"+currenrMoth1.slice(currenrMoth1.length-2)+"-"+currenrDay.slice(currenrDay.length-2);
+
+
+
 
 
   const tonggleAddEvent =()=>{
     setAddEvent(!addEvent)
   }
+ 
+
+  const [addNote, setAddNote] = useState(false)
   
+  const tonggleNote =()=>{
+    setAddNote(!addNote)
+   
+  }
+
+  
+ 
  
 
   
@@ -130,28 +150,38 @@ useEffect(()=>{
     }, 1000);
   };
 
+  const [itemActive, setitemActive] = useState('')
+  const tonggleAddNote = (item) => {
+    setitemActive(item)
+    tonggleNote()
+  }
+
+
   const renderItem = (item) => {
+    const list = item.items
+
     return (
 
-      
-       <Content padder>
-         
+      <View>
+          <Modal animationType="slide" visible={addNote} onRequestClose={()=>tonggleAddNote()}>
+            <AddNoteModal closeModals={()=>tonggleAddNote()} list = {items} itemActive = {itemActive} />
+          </Modal>
+
+          <TouchableOpacity style={{marginTop: 15}} >
           <Card style={{borderRadius: 10, marginBottom:-9, height:80}}>
-            <CardItem style={{height: 80,borderRadius: 10, backgroundColor: item.color    }} button >
+            <CardItem style={{height: 80,borderRadius: 10, backgroundColor: item.color}} button onPress={()=>tonggleAddNote(item)}>
             <Body>
               <Text style={{marginBottom:10, fontSize:10, fontWeight:'bold', color: 'white'}}>{item.name}</Text>
-              <Text style={{fontSize:10, color: 'white'}}>{items.uid}</Text>
-      
-
-
-              
+    <Text style={{fontSize:10, color: 'white'}}>{item.timestart}-{item.timeend}</Text>
             </Body>
-              
-          
+                  
             </CardItem>
           </Card>
-        </Content>
+          </TouchableOpacity>
+       
 
+        
+      </View>
       
     );
   };
@@ -191,20 +221,21 @@ useEffect(()=>{
         }}
         //refreshing={true}
         theme={{
-        
           agendaDayTextColor: '#6666ff',
           agendaDayNumColor: '#6666ff',
           agendaTodayColor: '#ff9933',
           agendaKnobColor: '#ff9933'
         }}
          style={{backgroundColor:'yellow'}}
-      
+        // onRefresh={() => setItems(items)}
       />
 
 </SafeAreaView>
     
   );
 }
+
+
 
 
 

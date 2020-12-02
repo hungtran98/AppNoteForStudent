@@ -1,11 +1,10 @@
 import React, {useState} from 'react';
-import { Text, View, StyleSheet, Image, Switch, Modal, KeyboardAvoidingView , TouchableOpacity, TextInput, ScrollView, Platform, Button} from 'react-native';
+import { Text, View, StyleSheet, Image, Modal, KeyboardAvoidingView , TouchableOpacity, TextInput, ScrollView, Platform, Button} from 'react-native';
 import {AntDesign} from "@expo/vector-icons"
 //import dataref from '../tempData'
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import moment from 'moment';
-
-import {  Icon } from "native-base";
+import { Container, Header, Content, Form, Item, Input, Label } from 'native-base';
 
 
 import firebase from 'firebase';
@@ -15,48 +14,15 @@ import "firebase/firestore";
 import {FirebaseContext} from '../Context/FirebaseContext';
 import {UserContext} from '../Context/UserContext';
 
-const AddEventModal = (props) => {
+
+const UpdateEventModal = (props) => {
+  const {itemActive}=props
 
   const backgroundColors = ["#00b3b3","#24a6d9","#595bd9", "#8022d9", "#d159d8", "#d85963", "#e6ac00"]
 
-  const [name, setName] = React.useState("")
-  const [color, setColor] = React.useState(backgroundColors[0])
+  const [name, setName] = React.useState(itemActive.name)
+  const [color, setColor] = React.useState(itemActive.color)
   const [_, setUser] = React.useContext(UserContext);
-
-
-
-
-  ///handle add events react native
-//    const addList = () => {
-//    const _iduser = _.uid
-//    const idrandom = "Ev" + Math.random().toString().substr(2,8)
-//    firebase.firestore().collection("events").add({
-//     id: idrandom,
-//     userid: _iduser,
-//     date: dateStart,
-//     timestart: timeStart,
-//     timeend: timeEnd,
-//     name: name,
-//     color: color
-//    })
-//    props.closeModal()
-//  }
-
-const addList = () => {
-  const _iduser = _.uid
-  const idrandom = "Ev" + Math.random().toString().substr(2,8)
-  firebase.firestore().collection("events").doc(idrandom).set({
-   id: idrandom,
-   userid: _iduser,
-   date: dateStart,
-   timestart: timeStart,
-   timeend: timeEnd,
-   name: name,
-   color: color
-  })
-  props.closeModal()
-}
-
 
 
 
@@ -68,20 +34,14 @@ const addList = () => {
   const [isShowEnd, setIsShowEnd] = useState(false);
   const [isShowTimeEnd, setIsShowTimeEnd] = useState(false);
 
-  const [dateStart, setDateStart] = useState("Select day")
+  const [dateStart, setDateStart] = useState(itemActive.date)
   const [dateEnd, setDateEnd] = useState("date end")
 
-  const [timeStart, setTimeStart] = useState("00:00")
-  const [timeEnd, setTimeEnd] = useState("00:00")
-
-  const [timeAlarm, setTimeAlarm] = useState("00:00")
-
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const [timeStart, setTimeStart] = useState(itemActive.timestart)
+  const [timeEnd, setTimeEnd] = useState(itemActive.timeend)
   
 
   
-
 
  //----date start
   const showDateStart = () => {
@@ -151,6 +111,18 @@ const showDateEnd = () => {
      
 
 
+  const updateList = () => {
+    const _iduser = _.uid
+   // const idrandom = "Ev" + Math.random().toString().substr(2,8)
+    firebase.firestore().collection("events").doc(itemActive.id).update({
+     date: dateStart,
+     timestart: timeStart,
+     timeend: timeEnd,
+     name: name,
+     color: color
+    })
+    props.closeModals()
+  }
 
 
 
@@ -168,39 +140,25 @@ const showDateEnd = () => {
 
   
 
- const CreatEvent = () => {
-
-   dataref.push({
-    id: '5',
-    uid: '01',
-    date: "2020-11-26",
-     name,
-     color,
-   })
-
-   setName("")
-   props.closeModal()
- }
 
   return (
   
    <KeyboardAvoidingView style={styles.container} behavior="padding">
    
-      <TouchableOpacity style={{position:"absolute", top: 30, right:5, backgroundColor:"#694fad", borderRadius:28, width: 30, height: 30, alignItems:"center", justifyContent:"center"}} onPress={props.closeModal}>
+      <TouchableOpacity style={{position:"absolute", top: 30, right:5, backgroundColor:"#694fad", borderRadius:28, width: 28, height:           30, alignItems:"center", justifyContent:"center"}} onPress={props.closeModals}>
         <AntDesign name="close" size ={20} color="#fff"  />
       </TouchableOpacity>
+      
 
       <ScrollView style={styles.scrollView}>
 
-          <Text style={styles.title}>Creat new event</Text>
-          <TextInput style={styles.input}
-         // onChangeText = {name => setName(name.trim())}
-         onChangeText = {name => setName(name.trim())}
-         placeholder="Add title" 
-        />
+          <Text style={styles.title}>Edit Event</Text>
+          <View>
+          <Input style={styles.input} placeholderTextColor="#666666" value={name} onChangeText={name=>{setName(name.trim())}} />
+         
+          </View>
 
-
-      <View style={{ marginTop: 10, borderRadius: 6, height: 150, borderTopColor: "#85a3e0"}}> 
+      <View style={{ marginTop: 10, borderRadius: 6, height: 150}}> 
           <View style={{flexDirection: "row"}}>
               <TouchableOpacity onPress={showDateStart} style={[styles.buttondate,{backgroundColor: color}]}> 
                   <Text style={{ color: "#fff"}}>{dateStart}</Text>
@@ -218,10 +176,8 @@ const showDateEnd = () => {
                 <Text style={{ color: "#fff"}}>
                   {timeEnd}
                 </Text> 
-              </TouchableOpacity>  
-            
+              </TouchableOpacity>    
           </View>
-
 
           <DateTimePickerModal
             isVisible={isShow}
@@ -251,32 +207,15 @@ const showDateEnd = () => {
             onCancel={hideTimeEnd}
           />       
         </View>
-        
-        
-        <View style={{marginTop: 10, marginLeft: -100 , paddingTop:10, borderTopWidth: 2,borderTopColor: "#85a3e0", flexDirection: "row", justifyContent: "center", alignItems:"center"}} >
-        <Icon name='alarm' style={{marginRight:5, color: "#3973ac" }}  />
-        <TouchableOpacity style={[styles.buttonalarm,{backgroundColor: color}]} onPress={showTimeStart}>
-                <Text style={{ color: "#fff"}}>
-                  {timeAlarm}
-                </Text> 
-        </TouchableOpacity>  
-            <Switch
-              trackColor={{ false: "#767577", true: "#3973ac" }}
-              thumbColor={isEnabled ? "#fff" : "#f4f3f4"}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitch}
-              value={isEnabled}
-            />
-          </View>
 
               
-          <View style={{flexDirection: "row", justifyContent:"space-between",marginTop: 12 ,  paddingTop:10, borderTopWidth: 2, borderTopColor: "#85a3e0"}}>
+          <View style={{flexDirection: "row", justifyContent:"space-between",marginTop: 12}}>
                 {renderColors()}
           </View>
             
-          <TouchableOpacity style={[styles.create, {backgroundColor: color}]} onPress={()=>addList()}>
+          <TouchableOpacity style={[styles.create, {backgroundColor: color}]} onPress={()=>updateList()} >
             <Text style={{fontWeight:"600", color: "#fff"}}>
-              create
+              Update
             </Text> 
           </TouchableOpacity>
 
@@ -284,6 +223,7 @@ const showDateEnd = () => {
    </KeyboardAvoidingView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -303,12 +243,14 @@ const styles = StyleSheet.create({
 
   },
   input : {
-    borderBottomWidth: 1,
-    borderColor: "#85a3e0",
+    flex: 1,
+    borderWidth: 2,
+    borderColor: "#ccb3ff",
+    borderRadius: 6,
     height: 50,
     marginTop: 8,
     paddingHorizontal: 16,
-    
+  
   },
   create:{
     marginTop:24,
@@ -352,25 +294,14 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginRight: 20
     
-  },
-  buttonalarm : {
-    justifyContent: "center", 
-    alignItems: "center",
-    height: 40,
-    width: 100,
-    borderRadius: 12,
-  
-    marginRight: 20
-    
   }
-
 
   
  
 });
 
 
-export default AddEventModal
+export default UpdateEventModal
 
 
 

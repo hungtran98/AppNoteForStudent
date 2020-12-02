@@ -48,8 +48,7 @@
           await firebase.signIn(email, password);
 
           const uid = firebase.getCurrentUser().uid;
-
-
+          console.log(uid)
           const userInfo = await firebase.getUserInfo(uid);
          // console.log(userInfo)
 
