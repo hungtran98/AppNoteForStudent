@@ -29,7 +29,7 @@ export default function HomeScreen ({navigation}) {
   //const [updateEvent, setUpdateEvent] = useState(false)
   
    
-  
+  const [isTime, setIsTime] = useState(currentTime)
 
   const [list, setList] = useState([])
 
@@ -37,6 +37,20 @@ export default function HomeScreen ({navigation}) {
   const  firebaseoj = React.useContext(FirebaseContext);
   const [_, setUser] = React.useContext(UserContext);
 
+  useEffect(()=>{
+    setTimeout(async () => {
+      const _iduser = _.uid
+    firebase.firestore().collection("events").where("userid", "==",_iduser).get().then(function(querySnapshot) {
+      querySnapshot.forEach(function(doc) {
+        if(timealarm==timestart)
+          alert("da den gio lam nhiem nhiem vu")
+      });
+    })
+    .catch(function(error) {
+        console.log("Error getting documents: ", error);
+    });
+
+    },300)},[])
 
 useEffect(()=>{
   setTimeout(async () => {
@@ -90,18 +104,13 @@ useEffect(()=>{
     });
   },500)},[])
 
-
   
-//  const addList = () => {
-//    const _iduser = _.uid
-//    firebase.firestore().collection("events").add({
-//     id: "7",
-//     userid: _iduser,
-//     date: "2020-11-30",
-//     name: "to do 7",
-//     color: "red"
-//    })
-//  }
+
+    
+
+
+ 
+
 
   
 
@@ -112,9 +121,11 @@ const currenrMoth1 = '0'+currenrMoth
 const currenrYear =  getDay.getFullYear();
 const fulldate = currenrYear+"-"+currenrMoth1.slice(currenrMoth1.length-2)+"-"+currenrDay.slice(currenrDay.length-2);
 
-
-
-
+const currentHour = '0'+getDay.getHours();
+const currentMi ='0'+getDay.getMinutes();
+    
+const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice(currentMi.length-2);
+    
 
   const tonggleAddEvent =()=>{
     setAddEvent(!addEvent)
@@ -156,6 +167,7 @@ const fulldate = currenrYear+"-"+currenrMoth1.slice(currenrMoth1.length-2)+"-"+c
     tonggleNote()
   }
 
+  
 
   const renderItem = (item) => {
     const list = item.items
@@ -216,15 +228,19 @@ const fulldate = currenrYear+"-"+currenrMoth1.slice(currenrMoth1.length-2)+"-"+c
         selected={fulldate}
         renderItem={renderItem}
 
-        markedDates={{
-           fulldate: {selected: true, marked: true},
-        }}
+        markedDates={
+        //   {
+        //    fulldate: {selected: true, marked: true},
+        // }
+        items
+      }
         //refreshing={true}
         theme={{
           agendaDayTextColor: '#6666ff',
           agendaDayNumColor: '#6666ff',
           agendaTodayColor: '#ff9933',
-          agendaKnobColor: '#ff9933'
+          agendaKnobColor: '#ff9933',
+          
         }}
          style={{backgroundColor:'yellow'}}
         // onRefresh={() => setItems(items)}

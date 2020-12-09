@@ -50,6 +50,7 @@ export default function SearchScreen({navigation}) {
                         <Text>nobita: send a video
                         </Text>
                         
+                        
                     </Body>
                      </ListItem>
 
@@ -73,7 +74,7 @@ export default function SearchScreen({navigation}) {
                         <Text>Nos: send a ticker</Text>
                     </Body>
                                   </ListItem>
-                       <Button
+                       {/* <Button
                           info
                           onPress={() => navigation.push("Notifications")}>
                           <Text>Go again....! </Text>
@@ -89,7 +90,7 @@ export default function SearchScreen({navigation}) {
                           success
                           onPress={() => navigation.goBack()}>
                           <Text>Go Back </Text>
-                      </Button>
+                      </Button> */}
                 </Content>
 
                 

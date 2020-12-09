@@ -97,7 +97,6 @@ export default function SignUpScreen({ navigation }) {
     setLoading(true);
 
     const user = { username, email, password, profilePhoto };
-
     
     try {
       const createdUser = await firebaseobj.createUser(user);
@@ -273,3 +272,6 @@ const styles = StyleSheet.create({
     color: '#05375a',
   },
 });
+
+
+

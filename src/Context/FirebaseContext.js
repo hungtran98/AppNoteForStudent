@@ -9,6 +9,8 @@ import Config from '../Config/firebase';
 import { useIsFocused } from '@react-navigation/native';
 
 
+
+
 const FirebaseContext = React.createContext()
 
 if(!firebase.apps.length) {
@@ -143,28 +145,33 @@ const Firebase = {
 createNote: async (note) => {
   try {
     //await firebase.auth().createUserWithEmailAndPassword(user.email, user.password);
-    const uid = Firebase.getCurrentUser().uid;
+   const uid = Firebase.getCurrentUser().uid;
+
+
 
   //  const idrandom = "User" + Math.random().toString().substr(2,8)
-
-    let profilePhotoUrl = "default";
-    await db.collection('notes').doc(uid).set({
-      id: note.idnote,
+  
+    let notePhotoUrl = "default";
+  //  let test = []
+    await db.collection('Notes').doc(note.idevent).set({
+      id: note.idrandom,
       idevent: note.idevent,
-      content: note.username,
-      profilePhotoUrl
+      content: note.content,
+      notePhotoUrl
     })
     
 
-    if(user.notePhoto) {
-      profilePhotoUrl = await Firebase.uploadProfilePhotoNote(note.profilePhoto);
+    
+    if(note.notePhoto) {
+      notePhotoUrl = await Firebase.uploadProfilePhotoNote(note.notePhoto, note.idevent);
        
 
     }
 
 
    // delete note.password;
-    return {...note, profilePhotoUrl, uid};
+  //  return {...note, profilePhotoUrl, uid};
+  return {...note, notePhotoUrl};
   }
   catch(error){
     console.log("Error @creatNote: ", error.message);
@@ -175,23 +182,22 @@ createNote: async (note) => {
 
 
 
-uploadProfilePhotoNote: async (uri) => {
+uploadProfilePhotoNote: async (uri,idev) => {
   const uid = Firebase.getCurrentUser().uid;
 
 
   try{
 
       const photo = await Firebase.getBlob(uri);
-      const imageRef = firebase.storage().ref('notePhotos').child(uid);
+      const imageRef = firebase.storage().ref('notePhotos').child(idev);
     
       await imageRef.put(photo);
 
 
       const url = await imageRef.getDownloadURL();
 
-
-      await db.collection("notes").doc(uid).update({
-        profilePhotoUrl: url,
+      await db.collection("Notes").doc(idev).update({
+        notePhotoUrl: url,
       })
       return url;
     
@@ -201,6 +207,7 @@ uploadProfilePhotoNote: async (uri) => {
 }
 ,
 
+
 getBlob: async (uri) => {
   return await new Promise( (resolve, reject)=> {
     const xhr = new XMLHttpRequest();
@@ -209,9 +216,10 @@ getBlob: async (uri) => {
       resolve(xhr.response);
     }
 
+
+
     xhr.onerror = () =>{
       reject( new TypeError("Network  request failed."))
-
     }
 
     xhr.responseType = "blob";

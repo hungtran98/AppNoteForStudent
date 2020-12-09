@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import { Text, View, StyleSheet, Image, Modal, KeyboardAvoidingView , TouchableOpacity, TextInput, ScrollView, Platform, Button} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { Text, View, StyleSheet, Image, Modal, KeyboardAvoidingView , FlatList, TouchableOpacity, TextInput, ScrollView, Platform, Button} from 'react-native';
 import {AntDesign} from "@expo/vector-icons"
 import { Container, Header, Content, Textarea, Form } from "native-base";
 
@@ -18,20 +18,51 @@ import {UserContext} from '../Context/UserContext';
 
 const AddNoteModal = (props) => {
 
-  
+
+  const {itemActive}=props
 
 
-  const [name, setName] = useState(props.itemActive.name)
+
+  const [name, setName] = useState(itemActive.name)
   const [updateEvent, setUpdateEvent] = useState(false)
   
-  const [content, setContent] = useState('...')
+  const [content, setContent] = useState("")
   const [notePhoto, setNotePhoto] = useState();
   const [idnote, setIdNote] = useState('')
   const [_, setUser] = React.useContext(UserContext);
+  const  firebaseoj = React.useContext(FirebaseContext);
+  const [idnt, setIdnt] = useState()
+  const [idev, setIdEv] = useState()
+  const [images, setImages] = useState(null)
+  const [idevent, setIdEvent] = useState(itemActive.id)
 
 
+ 
 
+  useEffect(()=>{
+    setTimeout(async () => {
   
+      
+      firebase.firestore().collection("Notes").where("idevent", "==",itemActive.id)
+      .get()
+      .then(function(querySnapshot) {
+          querySnapshot.forEach(function(doc) {
+              // doc.data() is never undefined for query doc snapshots
+             setContent(doc.data().content)
+            // setIdnt(doc.data().id)
+           //  setIdEv(doc.data().idevent)
+             setImages(doc.data().notePhotoUrl)
+          });
+      })
+      .catch(function(error) {
+          console.log("Error getting documents: ", error);
+      });
+    },200)},[])
+  
+//console.log(images[0])
+
+
+
   const getPermission = async () => {
     if (Platform.OS !== 'web') {
       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -43,19 +74,44 @@ const AddNoteModal = (props) => {
   const pickImage = async () => {
     try {
       let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.5,
+        //allowsMultipleSelection: true
       });
 
       if (!result.cancelled) {
         setNotePhoto(result.uri);
+        //console.log("xxsaf",notePhoto)
       }
     } catch (error) {
       console.log('error @pickImage: ', error);
     }
   };
+
+
+  const takeImage = async () => {
+    try {
+      let result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        //allowsMultipleSelection: true
+      });
+
+      if (!result.cancelled) {
+        setNotePhoto(result.uri);
+        //console.log("xxsaf",notePhoto)
+      }
+    } catch (error) {
+      console.log('error @pickImage: ', error);
+    }
+  };
+
+
+
+  
 
   const addprofilePhoto = async () => {
     const status = await getPermission();
@@ -70,44 +126,89 @@ const AddNoteModal = (props) => {
 
 
   
+  const addtakephoto = async () => {
+    const status = await getPermission();
+
+    if (status !== 'granted') {
+      alert('we need permission to access your camera roll');
+
+      return;
+    }
+    takeImage();
+  };
+//console.log(props.itemActive.id)
+
   const CreateNote = async () => {
     //setLoading(true);
     const idrandom = "Note" + Math.random().toString().substr(2,8)
     setIdNote(idrandom)
-    idevent = itemActive.id
+    //console.log("idnote la: ",idnote)
+    const note = {idevent,idrandom, content, notePhoto };
 
-    const note = {idevent, idnote, content, notePhoto };
-
-       // console.log(note)
+    
     
     try {
-      const creactenote = await firebaseobj.createNote(note);
+      const creactenote = await firebaseoj.createNote(note);
 
-     // setUser({ ...createdUser, isLoggedIn: true});
-
-     // console.log(createdUser);
-     props.closeModals()
+    itemActive.closeModals();
 
     } catch (error) {
-      console.log('Error @signUp: ', error);
+      console.log('Error @createEVT: ', error);
     } finally {
      // setLoading(false);
 
     }
   };
 
+  //console.log("xxxcsg",props.itemActive.idevent)
 
+  const addNote = () => {
+  
+    const idrandom = "Nt" + Math.random().toString().substr(2,8)
+    firebase.firestore().collection("note").doc(idrandom).set({
+     id: idrandom,
+     idevent: props.itemActive.id ,
+     content: content,
+    })
+    props.closeModals()
+  }
+
+  const updateNote = () => {
+ 
+
+
+   // const idrandom = "Nt" + Math.random().toString().substr(2,8)
+    firebase.firestore().collection("note").doc(idnt).update({
+     content: content,
+    })
+    props.closeModals()
+  }
   
   
-  
+
 
   const tonggleEvent =()=>{
     setUpdateEvent(!updateEvent)
   }
-  const {itemActive}=props
+  //const {itemActive}=props
   const tonggleUpdateEvent = () => {
     tonggleEvent()
   }
+
+
+  //flatlist for list images
+  const Item = ({ url }) => (
+    <View style={styles.profilePhotoContainer}>
+        <Image  style={styles.profilePhoto} source={{uri: url}} />
+    </View>
+  );
+
+  const renderItem = ({ item }) => (
+    <Item url={item.url} />
+  );
+
+  //------------------
+
 
 
   return (
@@ -126,17 +227,20 @@ const AddNoteModal = (props) => {
 
       <ScrollView style={styles.scrollView}>
 
-  <Text style={styles.title}>{itemActive.name}</Text>
+  <Text style={styles.title}>{name}</Text>
          <Form>
-            <Textarea style={{borderColor: "#ccb3ff", borderRadius: 6}} rowSpan={12} bordered value={content} onChangeText={(content) => setContent(content.trim())}
+            <Textarea style={{borderColor: "#ccb3ff", borderRadius: 6}} rowSpan={12} bordered value={content} onChangeText={content => setContent(content.trim())}
 />
           </Form>
 
-
+      <View style={{flexDirection: "row", justifyContent:"space-between"}}>
          <TouchableOpacity style={styles.camera} >
-          <AntDesign name="camera" size={30} color="#476b6b" onPress={()=>addprofilePhoto()}/>
+          <AntDesign name="picture" size={30} color="#476b6b" onPress={()=>addprofilePhoto()}/>
          </TouchableOpacity>
-
+         <TouchableOpacity style={styles.camera} >
+          <AntDesign name="camera" size={30} color="#476b6b" onPress={()=>addtakephoto()}/>
+         </TouchableOpacity>
+      </View>
          <View style={styles.profilePhotoContainer}>
           {notePhoto ? (
             <Image style={styles.profilePhoto} source={{ uri: notePhoto }} />
@@ -146,15 +250,59 @@ const AddNoteModal = (props) => {
             </View>
           )}
           </View>
+          
+          <View style={styles.profilePhotoContainer}>
+          {images!=null ? (
+            <Image style={styles.profilePhoto} source={{ uri: images }} />
+          ) : (
+            <View style={styles.defaultPhotoU}>
+              <Text style={{fontSize: 10, color: "#fff"}}>No images</Text>
+            </View>
+          )}
+          </View>
+          
+          {/* <View style={styles.profilePhotoContainer}>
+          {images!=null ? (
+            <Image style={styles.profilePhoto} source={{ uri: images[0].url }} />
+          ) : (
+            <View style={styles.defaultPhoto}>
+              <AntDesign name="plus" size={27} color="grey" />
+            </View>
+          )}
+          </View>
+
+          <View style={{flex:1, borderWidth:2, borderColor: "grey"}}>
+          <FlatList
+            data={images}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+      />
+          </View> */}
+          
+
+
+
+          
         
 
-          <TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>CreateNote}>
+        
+          <View style={{flex:1}}>
+            {idnt ?
+                    (<TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>updateNote()}>
+                      <Text>update</Text>
+                    </TouchableOpacity>
+                    )
           
-           
-            <AntDesign name="plus" size={30} color="#fff"/>
+                      :
+                     ( <TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>CreateNote()}>
+                      <Text>create</Text>
 
-          </TouchableOpacity>
+                      </TouchableOpacity>)
           
+        }
+          </View>
+          
+
     
       </ScrollView>
    </KeyboardAvoidingView>
@@ -243,8 +391,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#fff',
+  
   },
   defaultPhoto: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  defaultPhotoU: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
@@ -252,6 +406,13 @@ const styles = StyleSheet.create({
   profilePhoto: {
     flex: 1,
   },
+  item: {
+    backgroundColor: '#f9c2ff',
+    padding: 20,
+    marginVertical: 8,
+    marginHorizontal: 16,
+  },
+ 
 
   
  

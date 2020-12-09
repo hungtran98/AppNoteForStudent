@@ -52,10 +52,13 @@ const addList = () => {
    timestart: timeStart,
    timeend: timeEnd,
    name: name,
-   color: color
+   color: color,
+   timealarm: timeAlarm,
+   alarmlock: isEnabled
   })
   props.closeModal()
 }
+
 
 
 
@@ -68,6 +71,9 @@ const addList = () => {
   const [isShowEnd, setIsShowEnd] = useState(false);
   const [isShowTimeEnd, setIsShowTimeEnd] = useState(false);
 
+
+  const [isShowTimeAlarm, setIsShowTimeAlarm] = useState(false);
+
   const [dateStart, setDateStart] = useState("Select day")
   const [dateEnd, setDateEnd] = useState("date end")
 
@@ -77,8 +83,23 @@ const addList = () => {
   const [timeAlarm, setTimeAlarm] = useState("00:00")
 
   const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+  const toggleSwitch = () => setIsEnabled(!isEnabled);
   
+
+  //--time alarm
+  const showTimeAlarm = () => {
+    setIsShowTimeAlarm(true);
+  };
+
+const hideTimeAlarm = () => {
+setIsShowTimeAlarm(false);
+};
+const handleConfirmTimeAlarm = (time) => {
+  hideTimeAlarm()
+setTimeAlarm(moment(time).format('HH:mm'))//'MMMM, Do YYYY HH:mm'
+    
+};
 
   
 
@@ -113,6 +134,7 @@ const showDateEnd = () => {
   };
 
 
+
 //----TIme start
  const showTimeStart = () => {
         setIsShowTime(true);
@@ -137,10 +159,15 @@ const showDateEnd = () => {
     setIsShowTimeEnd(false);
   };
    const handleConfirmTimeEnd = (time) => {
-    hideTimeEnd();
-    setTimeEnd(moment(time).format('HH:mm'))//'MMMM, Do YYYY HH:mm'
-
+   
+   hideTimeEnd();
+   setTimeEnd(moment(time).format('HH:mm'))//'MMMM, Do YYYY HH:mm'
+        
   };
+
+
+
+ 
 
 
   
@@ -249,13 +276,19 @@ const showDateEnd = () => {
             mode="time"
             onConfirm={handleConfirmTimeEnd}
             onCancel={hideTimeEnd}
-          />       
+          />     
+           <DateTimePickerModal
+            isVisible={isShowTimeAlarm}
+            mode="time"
+            onConfirm={handleConfirmTimeAlarm}
+            onCancel={hideTimeAlarm}
+          />    
         </View>
         
         
         <View style={{marginTop: 10, marginLeft: -100 , paddingTop:10, borderTopWidth: 2,borderTopColor: "#85a3e0", flexDirection: "row", justifyContent: "center", alignItems:"center"}} >
         <Icon name='alarm' style={{marginRight:5, color: "#3973ac" }}  />
-        <TouchableOpacity style={[styles.buttonalarm,{backgroundColor: color}]} onPress={showTimeStart}>
+        <TouchableOpacity style={[styles.buttonalarm,{backgroundColor: color}]} onPress={showTimeAlarm}>
                 <Text style={{ color: "#fff"}}>
                   {timeAlarm}
                 </Text> 

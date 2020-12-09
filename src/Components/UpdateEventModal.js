@@ -15,6 +15,7 @@ import {FirebaseContext} from '../Context/FirebaseContext';
 import {UserContext} from '../Context/UserContext';
 
 
+
 const UpdateEventModal = (props) => {
   const {itemActive}=props
 
@@ -25,9 +26,6 @@ const UpdateEventModal = (props) => {
   const [_, setUser] = React.useContext(UserContext);
 
 
-
-  
-///
 
   const [isShow, setIsShow] = useState(false);
   const [isShowTime, setIsShowTime] = useState(false);
