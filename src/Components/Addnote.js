@@ -33,25 +33,48 @@ const AddNoteModal = (props) => {
   const  firebaseoj = React.useContext(FirebaseContext);
   const [idnt, setIdnt] = useState()
   const [idev, setIdEv] = useState()
-  const [images, setImages] = useState(null)
+  const [images, setImages] = useState([])
   const [idevent, setIdEvent] = useState(itemActive.id)
+  const [countimage, setCountImage] = useState(0)
 
 
  
 
+  // useEffect(()=>{
+  //   setTimeout(async () => {
+  
+      
+  //     firebase.firestore().collection("Notes").where("idevent", "==",itemActive.id)
+  //     .get()
+  //     .then(function(querySnapshot) {
+  //         querySnapshot.forEach(function(doc) {
+  //             // doc.data() is never undefined for query doc snapshots
+  //            setContent(doc.data().content)
+  //            setIdnt(doc.data().id)
+  //          //  setIdEv(doc.data().idevent)
+  //            setImages(doc.data().notePhotoUrl)
+  //         });
+  //     })
+  //     .catch(function(error) {
+  //         console.log("Error getting documents: ", error);
+  //     });
+  //   },200)},[])
+  
   useEffect(()=>{
     setTimeout(async () => {
   
       
-      firebase.firestore().collection("Notes").where("idevent", "==",itemActive.id)
+      firebase.firestore().collection("notes").where("idevent", "==",itemActive.id)
       .get()
       .then(function(querySnapshot) {
           querySnapshot.forEach(function(doc) {
               // doc.data() is never undefined for query doc snapshots
              setContent(doc.data().content)
-            // setIdnt(doc.data().id)
+             setIdnt(doc.data().id)
            //  setIdEv(doc.data().idevent)
              setImages(doc.data().notePhotoUrl)
+             setCountImage(images.length)
+
           });
       })
       .catch(function(error) {
@@ -60,6 +83,8 @@ const AddNoteModal = (props) => {
     },200)},[])
   
 //console.log(images[0])
+
+
 
 
 
@@ -136,7 +161,6 @@ const AddNoteModal = (props) => {
     }
     takeImage();
   };
-//console.log(props.itemActive.id)
 
   const CreateNote = async () => {
     //setLoading(true);
@@ -160,32 +184,85 @@ const AddNoteModal = (props) => {
     }
   };
 
-  //console.log("xxxcsg",props.itemActive.idevent)
+  const updateNote = async () => {
+    //setLoading(true);
+   
+    //console.log("idnote la: ",idnote)
+    const note = {idevent,content, notePhoto };
 
-  const addNote = () => {
+    
+    
+    try {
+      const updatenote = await firebaseoj.updatenote(note);
+
+    itemActive.closeModals();
+
+    } catch (error) {
+      console.log('Error @createEVT: ', error);
+    } finally {
+     // setLoading(false);
+
+    }
+  };
+
   
-    const idrandom = "Nt" + Math.random().toString().substr(2,8)
-    firebase.firestore().collection("note").doc(idrandom).set({
-     id: idrandom,
-     idevent: props.itemActive.id ,
-     content: content,
-    })
-    props.closeModals()
-  }
+  //---------------creat and update multie images--------------------
 
-  const updateNote = () => {
- 
+  const createNoteMultie = async () => {
+    //setLoading(true);
+    const idrandom = "Note" + Math.random().toString().substr(2,8)
+    setIdNote(idrandom)
+    
+    const note = {idevent,idrandom, content, notePhoto, countimage };
+
+    
+    
+    try {
+      const creactenote = await firebaseoj.createNoteMultie(note);
+
+    itemActive.closeModals();
+
+    } catch (error) {
+      console.log('Error @createEVT: ', error);
+    } finally {
+     // setLoading(false);
+
+    }
+  };
+
+  const updateNoteMultie = async () => {
+   
+
+    //const countimages = images.length()
+    const note = {countimage, images, idevent,content, notePhoto };
+
+    //console.log(countimages,"asafsgg")
 
 
-   // const idrandom = "Nt" + Math.random().toString().substr(2,8)
-    firebase.firestore().collection("note").doc(idnt).update({
-     content: content,
-    })
-    props.closeModals()
-  }
-  
-  
+    
+    
+    
+    try {
+      const updatenotemultie = await firebaseoj.updateNoteMultie(note);
 
+    itemActive.closeModals();
+
+    } catch (error) {
+      console.log('Error @createEVT: ', error);
+    } finally {
+     // setLoading(false);
+
+    }
+  };
+
+
+
+
+
+
+
+
+  //---------------------images-----------------------
 
   const tonggleEvent =()=>{
     setUpdateEvent(!updateEvent)
@@ -229,7 +306,7 @@ const AddNoteModal = (props) => {
 
   <Text style={styles.title}>{name}</Text>
          <Form>
-            <Textarea style={{borderColor: "#ccb3ff", borderRadius: 6}} rowSpan={12} bordered value={content} onChangeText={content => setContent(content.trim())}
+            <Textarea autoFocus={true} placeholder="Note something ..." style={{borderColor: "#ccb3ff", borderRadius: 6}} rowSpan={12} bordered value={content} onChangeText={content => setContent(content)}
 />
           </Form>
 
@@ -251,7 +328,7 @@ const AddNoteModal = (props) => {
           )}
           </View>
           
-          <View style={styles.profilePhotoContainer}>
+          {/* <View style={styles.profilePhotoContainer}>
           {images!=null ? (
             <Image style={styles.profilePhoto} source={{ uri: images }} />
           ) : (
@@ -259,7 +336,7 @@ const AddNoteModal = (props) => {
               <Text style={{fontSize: 10, color: "#fff"}}>No images</Text>
             </View>
           )}
-          </View>
+          </View> */}
           
           {/* <View style={styles.profilePhotoContainer}>
           {images!=null ? (
@@ -288,22 +365,20 @@ const AddNoteModal = (props) => {
         
           <View style={{flex:1}}>
             {idnt ?
-                    (<TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>updateNote()}>
+                    (<TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>updateNoteMultie()}>
                       <Text>update</Text>
                     </TouchableOpacity>
                     )
           
                       :
-                     ( <TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>CreateNote()}>
+                     ( <TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>createNoteMultie()}>
                       <Text>create</Text>
 
                       </TouchableOpacity>)
           
         }
           </View>
-          
-
-    
+         
       </ScrollView>
    </KeyboardAvoidingView>
 

@@ -152,7 +152,7 @@ const showDateEnd = () => {
 
           <Text style={styles.title}>Edit Event</Text>
           <View>
-          <Input style={styles.input} placeholderTextColor="#666666" value={name} onChangeText={name=>{setName(name.trim())}} />
+          <Input style={styles.input} placeholderTextColor="#666666" value={name} onChangeText={name=>{setName(name)}} />
          
           </View>
 

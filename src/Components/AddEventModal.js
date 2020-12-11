@@ -222,7 +222,7 @@ const showDateEnd = () => {
           <Text style={styles.title}>Creat new event</Text>
           <TextInput style={styles.input}
          // onChangeText = {name => setName(name.trim())}
-         onChangeText = {name => setName(name.trim())}
+         onChangeText = {name => setName(name)}
          placeholder="Add title" 
         />
 
