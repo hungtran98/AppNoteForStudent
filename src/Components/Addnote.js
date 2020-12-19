@@ -12,6 +12,9 @@ import * as ImagePicker from 'expo-image-picker';
 import firebase from 'firebase';
 import "firebase/firestore";
 
+
+import ImageModal from 'react-native-image-modal';
+
 import {FirebaseContext} from '../Context/FirebaseContext';
 import {UserContext} from '../Context/UserContext';
 
@@ -27,6 +30,7 @@ const AddNoteModal = (props) => {
   const [updateEvent, setUpdateEvent] = useState(false)
   
   const [content, setContent] = useState("")
+  const [idsubject, setIdSubject] = useState(itemActive.idsubject)
   const [notePhoto, setNotePhoto] = useState();
   const [idnote, setIdNote] = useState('')
   const [_, setUser] = React.useContext(UserContext);
@@ -74,6 +78,7 @@ const AddNoteModal = (props) => {
            //  setIdEv(doc.data().idevent)
              setImages(doc.data().notePhotoUrl)
              setCountImage(images.length)
+           //  setIdSubject(doc.data().idsubject)
 
           });
       })
@@ -213,12 +218,28 @@ const AddNoteModal = (props) => {
     const idrandom = "Note" + Math.random().toString().substr(2,8)
     setIdNote(idrandom)
     
-    const note = {idevent,idrandom, content, notePhoto, countimage };
+    const note = {idevent,idrandom, idsubject, content, notePhoto, countimage };
 
     
     
     try {
       const creactenote = await firebaseoj.createNoteMultie(note);
+      firebase.firestore().collection("notes").where("idevent", "==",itemActive.id)
+      .get()
+      .then(function(querySnapshot) {
+          querySnapshot.forEach(function(doc) {
+              // doc.data() is never undefined for query doc snapshots
+             setContent(doc.data().content)
+             setIdnt(doc.data().id)
+           //  setIdEv(doc.data().idevent)
+             setImages(doc.data().notePhotoUrl)
+             setCountImage(images.length)
+
+          });
+      })
+      .catch(function(error) {
+          console.log("Error getting documents: ", error);
+      });
 
     itemActive.closeModals();
 
@@ -244,6 +265,22 @@ const AddNoteModal = (props) => {
     
     try {
       const updatenotemultie = await firebaseoj.updateNoteMultie(note);
+      firebase.firestore().collection("notes").where("idevent", "==",itemActive.id)
+      .get()
+      .then(function(querySnapshot) {
+          querySnapshot.forEach(function(doc) {
+              // doc.data() is never undefined for query doc snapshots
+             setContent(doc.data().content)
+             setIdnt(doc.data().id)
+           //  setIdEv(doc.data().idevent)
+             setImages(doc.data().notePhotoUrl)
+             setCountImage(images.length)
+
+          });
+      })
+      .catch(function(error) {
+          console.log("Error getting documents: ", error);
+      });
 
     itemActive.closeModals();
 
@@ -273,10 +310,35 @@ const AddNoteModal = (props) => {
   }
 
 
+  // //flatlist for list images
+  
+  // const Item = ({ url }) => (
+  //   <View style={styles.profilePhotoContainers}>
+  //       <Image  style={styles.profilePhoto} source={{uri: url}} />
+  //   </View>
+  // );
+
+  // const renderItem = ({ item }) => (
+  //   <Item url={item.url} />
+  // );
+
+  // //------------------
+  
   //flatlist for list images
+  
   const Item = ({ url }) => (
-    <View style={styles.profilePhotoContainer}>
-        <Image  style={styles.profilePhoto} source={{uri: url}} />
+    <View style={styles.profilePhotoContainers}>
+        <ImageModal
+          resizeMode="contain"
+          imageBackgroundColor="#b3b3ff"
+          style={{
+            width: 120,
+            height: 150,
+          }}
+          source={{
+            uri: url
+          }}
+        />
     </View>
   );
 
@@ -286,6 +348,9 @@ const AddNoteModal = (props) => {
 
   //------------------
 
+
+
+  
 
 
   return (
@@ -318,6 +383,23 @@ const AddNoteModal = (props) => {
           <AntDesign name="camera" size={30} color="#476b6b" onPress={()=>addtakephoto()}/>
          </TouchableOpacity>
       </View>
+      
+        
+      <View style={{flex:1}}>
+            {idnt ?
+                    (<TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>updateNoteMultie()}>
+                      <Text style={{color: "#fff", fontWeight:"bold"}}>update</Text>
+                    </TouchableOpacity>
+                    )
+          
+                      :
+                     ( <TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>createNoteMultie()}>
+                      <Text style={{color: "#fff", fontWeight:"bold"}}>create</Text>
+
+                      </TouchableOpacity>)
+        
+        }
+          </View>
          <View style={styles.profilePhotoContainer}>
           {notePhoto ? (
             <Image style={styles.profilePhoto} source={{ uri: notePhoto }} />
@@ -355,32 +437,30 @@ const AddNoteModal = (props) => {
             keyExtractor={item => item.id}
       />
           </View> */}
-          
 
-
-
-          
-        
-
-        
-          <View style={{flex:1}}>
-            {idnt ?
-                    (<TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>updateNoteMultie()}>
-                      <Text>update</Text>
-                    </TouchableOpacity>
-                    )
-          
-                      :
-                     ( <TouchableOpacity style={[styles.create, {backgroundColor:props.itemActive.color}]} onPress={()=>createNoteMultie()}>
-                      <Text>create</Text>
-
-                      </TouchableOpacity>)
-          
-        }
+        <View style={{flex:1,marginBottom: 20}}>
+          <FlatList
+            
+            data={images}
+            horizontal={true}
+            renderItem={renderItem}
+            keyExtractor={item => item.id}
+          />
           </View>
+
+
+          
+
+
+
+          
+        
+
          
       </ScrollView>
+      
    </KeyboardAvoidingView>
+
 
 
 
@@ -393,7 +473,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
+    
   },
   title :{
     fontSize: 18, 
@@ -430,7 +511,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     height: 620,
     width: 300,
-    borderRadius: 6
+    borderRadius: 6,
+    marginRight: 70
   },
    buttondate : {
     justifyContent: "center", 
@@ -458,15 +540,27 @@ const styles = StyleSheet.create({
   },
   profilePhotoContainer: {
     backgroundColor: '#e1e2e6',
-    width: 100,
-    height: 100,
+    width: 75,
+    height: 75,
     borderRadius: 6,
     alignSelf: 'center',
     marginTop: 12,
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#fff',
+   
   
+  },
+  profilePhotoContainers: {
+    backgroundColor: '#e1e2e6',
+    width: 120,
+    height: 160,
+    borderRadius: 6,
+    alignSelf: 'center',
+    marginTop: 12,
+    overflow: 'hidden',
+    shadowRadius:20,
+    shadowColor:"#000",
+    shadowOpacity:1,
+    marginHorizontal: 10
   },
   defaultPhoto: {
     alignItems: 'center',
@@ -480,6 +574,9 @@ const styles = StyleSheet.create({
   },
   profilePhoto: {
     flex: 1,
+    borderWidth:2,
+    borderColor: '#ddccff'
+    
   },
   item: {
     backgroundColor: '#f9c2ff',

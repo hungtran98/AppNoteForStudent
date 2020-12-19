@@ -43,9 +43,9 @@
             name="Search"
             component={SearchScreen}
             options={{
-              tabBarLabel: 'Search',
+              tabBarLabel: 'Subjects',
               tabBarIcon: ({ color }) => (
-                <MaterialCommunityIcons name="eye" color={color} size={26} /> ),
+                <MaterialCommunityIcons name="book" color={color} size={26} /> ),
             }}
           />
 

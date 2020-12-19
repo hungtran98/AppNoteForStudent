@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { Text, View, StyleSheet, Image, Switch, Modal, KeyboardAvoidingView , TouchableOpacity, TextInput, ScrollView, Platform, Button} from 'react-native';
 import {AntDesign} from "@expo/vector-icons"
 //import dataref from '../tempData'
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import moment from 'moment';
 
-import {  Icon } from "native-base";
+import {  Icon, Item, Picker  } from "native-base";
 
 
 import firebase from 'firebase';
@@ -26,28 +26,14 @@ const AddEventModal = (props) => {
 
 
 
-  ///handle add events react native
-//    const addList = () => {
-//    const _iduser = _.uid
-//    const idrandom = "Ev" + Math.random().toString().substr(2,8)
-//    firebase.firestore().collection("events").add({
-//     id: idrandom,
-//     userid: _iduser,
-//     date: dateStart,
-//     timestart: timeStart,
-//     timeend: timeEnd,
-//     name: name,
-//     color: color
-//    })
-//    props.closeModal()
-//  }
 
 const addList = () => {
   const _iduser = _.uid
   const idrandom = "Ev" + Math.random().toString().substr(2,8)
-  firebase.firestore().collection("events").doc(idrandom).set({
-   id: idrandom,
+  const data = {
+      id: idrandom,
    userid: _iduser,
+  idsubject: selected ? selected.id : '',
    date: dateStart,
    timestart: timeStart,
    timeend: timeEnd,
@@ -55,7 +41,10 @@ const addList = () => {
    color: color,
    timealarm: timeAlarm,
    alarmlock: isEnabled
-  })
+ 
+    
+  }
+  firebase.firestore().collection("events").doc(idrandom).set(data)
   props.closeModal()
 }
 
@@ -86,6 +75,31 @@ const addList = () => {
 
   const toggleSwitch = () => setIsEnabled(!isEnabled);
   
+
+  const [selected, setSelected] = useState('')
+  const [list, setList] = useState([])
+
+
+
+  useEffect(()=>{
+    setTimeout(async () => {
+  
+      const _iduser = _.uid
+      firebase.firestore().collection("subjects").where("userid", "==",_iduser)
+      .get()
+      .then(function(querySnapshot) {
+        var listsubject = []
+          querySnapshot.forEach(function(doc) {
+           listsubject.push({ id:doc.id,...doc.data()} )
+          });
+          setList(listsubject)
+      })
+      .catch(function(error) {
+          console.log("Error getting documents: ", error);
+      });
+    },1000)},[])
+    
+    
 
   //--time alarm
   const showTimeAlarm = () => {
@@ -167,6 +181,12 @@ const showDateEnd = () => {
 
 
 
+  const onValueChange2 = (value)=> {
+    setSelected(value)
+  }
+
+
+
  
 
 
@@ -208,7 +228,7 @@ const showDateEnd = () => {
    setName("")
    props.closeModal()
  }
-
+ 
   return (
   
    <KeyboardAvoidingView style={styles.container} behavior="padding">
@@ -221,10 +241,37 @@ const showDateEnd = () => {
 
           <Text style={styles.title}>Creat new event</Text>
           <TextInput style={styles.input}
-         // onChangeText = {name => setName(name.trim())}
+         
          onChangeText = {name => setName(name)}
          placeholder="Add title" 
+         placeholderTextColor="#666666"
+         autoCapitalize="none"
         />
+
+
+          <Picker
+            mode="dropdown"
+            iosIcon={<Icon name="arrow-down" />}
+            style={{ width: undefined, marginTop: 10, borderBottomWidth: 1 }}
+            placeholder="Select your Subject"
+            placeholderStyle={{ color: "#bfc6ea" }}
+            placeholderIconColor="#007aff"
+            selectedValue={selected}
+            onValueChange={onValueChange2}
+          >
+          {
+            list.map((item,idx)=>{
+              return(
+                <Picker.Item label={item.name} value={item} key={idx}/>
+              )
+            })
+          }
+
+
+                
+                
+
+          </Picker>
 
 
       <View style={{ marginTop: 10, borderRadius: 6, height: 150, borderTopColor: "#85a3e0"}}> 

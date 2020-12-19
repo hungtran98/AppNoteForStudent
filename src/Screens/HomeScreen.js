@@ -1,11 +1,14 @@
 import React, {useState, useContext, useEffect} from 'react';
-import {View, TouchableOpacity, Text, ActivityIndicator, SafeAreaView, Modal} from 'react-native';
+import {View, TouchableOpacity, Text, ActivityIndicator, SafeAreaView, Modal, Animated} from 'react-native';
 import {Agenda, Calendar} from 'react-native-calendars';
 //import { Avatar} from 'react-native-paper';
 import { Container, Header, Content, Card, SwipeRow, CardItem, Body, Button, Avatar, Icon } from "native-base";
 import { AntDesign } from '@expo/vector-icons';
 import AddEventModal from '../Components/AddEventModal'
 import AddNoteModal from '../Components/Addnote'
+import {Swipeable} from 'react-native-gesture-handler'
+ 
+
 
 //import dataref from "../../tempData";
 import firebase from 'firebase';
@@ -70,6 +73,8 @@ useEffect(()=>{
           let dates = []
           let arrayDate = []
           
+          
+
 
           data.forEach(item => {
               dates.push(item.date)
@@ -89,6 +94,7 @@ useEffect(()=>{
                       objsDate.id= (item.id)
                       objsDate.timestart = (item.timestart)
                       objsDate.timeend = (item.timeend)
+                      objsDate.idsubject = (item.idsubject)
                       arrayName.push(objsDate)
 
                       arrayDate[d] = arrayName
@@ -99,6 +105,9 @@ useEffect(()=>{
 
       
           setItems(items1)
+
+
+          
          // setLoading(false)
             
     });
@@ -160,6 +169,7 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
       setItems(newItems);
     }, 1000);
   };
+  
 
   const [itemActive, setitemActive] = useState('')
   const tonggleAddNote = (item) => {
@@ -179,9 +189,10 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
             <AddNoteModal closeModals={()=>tonggleAddNote()} list = {items} itemActive = {itemActive} />
           </Modal>
 
-          <TouchableOpacity style={{marginTop: 15}} >
-          <Card style={{borderRadius: 10, marginBottom:-9, height:80}}>
-            <CardItem style={{height: 80,borderRadius: 10, backgroundColor: item.color}} button onPress={()=>tonggleAddNote(item)}>
+          <TouchableOpacity style={{marginTop: 15, }} >
+          <Swipeable  renderRightActions={rightAction}>
+          <Card style={{ marginBottom:-9, height:70, borderTopRightRadius: 10}}>
+            <CardItem style={{height: 70 ,  backgroundColor: item.color,  borderTopRightRadius: 10}} button onPress={()=>tonggleAddNote(item)}>
             <Body>
               <Text style={{marginBottom:10, fontSize:10, fontWeight:'bold', color: 'white'}}>{item.name}</Text>
     <Text style={{fontSize:10, color: 'white'}}>{item.timestart}-{item.timeend}</Text>
@@ -189,6 +200,7 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
                   
             </CardItem>
           </Card>
+          </Swipeable>
           </TouchableOpacity>
        
 
@@ -199,25 +211,47 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
   };
 
 
+  const rightAction = (progress, dragX) =>{
+    const scale = dragX.interpolate({
+        inputRange: [-100,0],
+        outputRange: [1,0], 
+        extrapolate: "clamp"
+    })
+    return(
+      <TouchableOpacity style={{height: 60, marginTop: 5, marginRight: 5, borderLeftWidth:8, borderLeftColor:"red"}}>
+        <Animated.View style={{flex:1, backgroundColor: "red", justifyContent:"center", alignItems:"center", width:120, height:40
+,borderTopRightRadius: 10}}>
+        <AntDesign name="delete" size={22} color="#fff" />
+       
+        </Animated.View>
+      </TouchableOpacity>
+    )
+  } 
+
+
 
  
   return (
-  <SafeAreaView style={{flex:1}}>
+  <SafeAreaView style={{flex:1, position: "relative"}}>
     
     <Modal animationType="slide" visible={addEvent} onRequestClose={()=>tonggleAddEvent()}>
     
       <AddEventModal closeModal={()=>tonggleAddEvent()} />
     </Modal>
-     <View style={{backgroundColor:"#f0f5f5", height:35}}>
-        <TouchableOpacity style={{backgroundColor:"#694fad", height:30, width:30, alignItems:"center", justifyContent:"center",
-      marginLeft:180, marginTop:5, borderRadius:30, borderWidth:2, borderColor:"#fff"}} 
+    <View style={{backgroundColor:"#fff", position:"absolute",  height: 55, width: 55,  marginLeft:300, marginTop:540,  borderRadius:30}}>
+    <TouchableOpacity style={{backgroundColor:"#fff",shadowColor: '#ccd9ff', height:55, width:55, alignItems:"center", justifyContent:"center",
+      borderRadius:30, borderWidth:5, borderBottomColor:"#0099cc", borderLeftColor: "#00ff80", borderRightColor:"#ff1a1a",
+    borderTopColor:"#ffcc00"}} 
       onPress={()=>tonggleAddEvent()}>
-          <Text style={{color:"#fff", fontWeight:"bold", alignItems:"center"}}>+</Text>
+                  <AntDesign name="plus" size ={35} color="#694fad"  />
+
         </TouchableOpacity>
 
     </View>
     
    
+    <View style={{flex: 1, zIndex: -1}}>
+
       <Agenda
        items={items}
     
@@ -245,6 +279,8 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
          style={{backgroundColor:'yellow'}}
         // onRefresh={() => setItems(items)}
       />
+
+    </View>
 
 </SafeAreaView>
     

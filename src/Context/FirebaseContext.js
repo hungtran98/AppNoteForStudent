@@ -307,6 +307,7 @@ createNoteMultie: async (note) => {
     await db.collection('notes').doc(note.idevent).set({
       id: note.idrandom,
       idevent: note.idevent,
+      idsubject: note.idsubject,
       content: note.content,
       notePhotoUrl
     })

@@ -34,7 +34,7 @@ export default function LoadingScreen() {
               setuser( state => ({...state, isLoggedIn: false}));
             }
               
-          },500)
+          },2000)
         },[])
 
         return(

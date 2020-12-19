@@ -1,115 +1,208 @@
-import React, { Component} from 'react';
-import { Container, Header, Body, Title, Content, Button, Icon, Footer, FooterTab, Left, Right,
-        Item, Input, List, ListItem, Thumbnail} from 'native-base';
-import {Text, StyleSheet} from 'react-native';
-import { createStackNavigator } from '@react-navigation/stack';
+import React, { Component, useEffect, useState} from 'react';
+import { Container, Header, Body, Title, Content, Button, Footer, FooterTab, Left, Right, Icon, Item,Input,
+        List, ListItem, Thumbnail } from 'native-base';
+import {Text, StyleSheet, TextInput, View, FlatList, TouchableOpacity, Animated, Modal} from 'react-native';
+import { AntDesign } from '@expo/vector-icons';
+
+
+//import { createStackNavigator } from '@react-navigation/stack';
+
+
+import {Swipeable} from 'react-native-gesture-handler'
+
+
+
+
+import firebase from 'firebase';
+import "firebase/firestore";
+
+import {FirebaseContext} from '../Context/FirebaseContext';
+import {UserContext} from '../Context/UserContext';
+import { VirtualizedList } from 'react-native';
+import Garellyimages from '../Components/GarellyImages'
+
 
 
 export default function SearchScreen({navigation}) {
 
-        return(
+  const [subject, setSubject] = useState('')
+  const [idSubject, setIdSubject] = useState('')
+  const [_, setUser] = React.useContext(UserContext);
+  const [list, setList] = useState([])
+
+
+  useEffect(()=>{
+    setTimeout(async () => {
+  
+      const _iduser = _.uid
+      firebase.firestore().collection("subjects").where("userid", "==",_iduser)
+      .get()
+      .then(function(querySnapshot) {
+        var listsubject = []
+          querySnapshot.forEach(function(doc) {
+           listsubject.push({ id:doc.id,...doc.data()} )
+          });
+          setList(listsubject)
+        
+
+         
+
+      })
+      .catch(function(error) {
+          console.log("Error getting documents: ", error);
+      });
+    },1000)},[])
+
+
+    const Item = ({ name, idsub}) => (
+      <Swipeable  renderRightActions={rightAction}>
+        <Button style={styles.item} onPress={()=>tonggleShowimg(name, idsub)}>
+          <Text style={styles.title}>{idsub}</Text>
+        </Button>
+      </Swipeable>
+    );
+
+
+
+
+
+    
+  const [show, setShow] = useState(false)  
+  const tonggleShow =()=>{
+    setShow(!show)
+   
+  }
+  const [itemActive, setitemActive] = useState({})
+
+  const tonggleShowimg = (item) => {
+    setitemActive(item)
+    tonggleShow()
+  }
+    const renderItem = ({ item }) => {
+      
+      return(
+    <View>
+      <Modal animationType="slide" visible={show} onRequestClose={()=>tonggleShow()}>
+        <Garellyimages closeimg={()=>tonggleShowimg()} itemActive = {itemActive}/>
+      </Modal>
+
+      <Item name={item.id} idsub = {item.name} />
+    </View>
+    );
+    }
+   
+
+    const rightAction = (progress, dragX) =>{
+      const scale = dragX.interpolate({
+          inputRange: [-100,0],
+          outputRange: [1,0], 
+          extrapolate: "clamp"
+      }) 
+      return(
+        <TouchableOpacity style={{height: 50, marginTop:8, marginRight:20,}}>
+          <Animated.View style={{flex:1, backgroundColor: "red", justifyContent:"center", alignItems:"center", width:100, height:100, borderBottomEndRadius: 10
+        , borderTopRightRadius: 10 }}>
+          <AntDesign name="delete" size={22} color="#fff" />
+         
+          </Animated.View>
+        </TouchableOpacity>
+      )
+    }
+
+
+    
+ 
+
+
+
+
+
+
+
+  const addSubject = () => {
+    const _iduser = _.uid
+    const idrandom = "Sub" + Math.random().toString().substr(2,8)
+   firebase.firestore().collection("subjects").doc(idrandom).set({
+     id: idrandom,
+     name: subject,
+     userid: _iduser,
+    })
+    const data = {
+      id: idrandom,
+      name: subject,
+      userid: _iduser,
+      
+    }
+    setList([...list,data])
+  }
+       
+  return(
+
+    
             <Container>
-                <Header searchBar rounded >
-                    <Item>
-                        <Icon name="ios-search"/>
-                        <Input placeholder="Search anything..." />
-                        <Icon name="ios-people"/>
-                    </Item>
-
-                </Header>
-
-                <Content>
-                   
-                    <ListItem avatar>
-                    <Left>
-                        <Thumbnail source={{uri: 'https://wallpapercave.com/wp/wp1812462.jpg'}}/>
-                    </Left>
-                    <Body>
-                        <Text style={styles.Titlename}>ku shin</Text>
-                        <Text>You: Chieu nay minh gap nhau duoc...</Text>
-                        
-                    </Body>
-                     </ListItem>
-                     <ListItem avatar>
-                    <Left>
-                        <Thumbnail source={{uri: 'https://i.pinimg.com/originals/ac/50/55/ac50554921f07db67489e8dc9e90caaf.jpg'}}/>
-                    </Left>
-                    <Body>
-                        <Text style={styles.Titlename}>Shizuka</Text>
-                        <Text>hsizuka: hihi a deki kì quá đi...</Text>
-                      
-                    </Body>
-                </ListItem>
-
-                <ListItem avatar>
-                    <Left>
-                        <Thumbnail source={{uri: 'https://tse3.mm.bing.net/th?id=OIP.N4H1IqfI3IqUUEZNAJ2dLAHaH3&pid=Api&P=0&w=300&h=300'}}/>
-                    </Left>
-                    <Body>
-                        <Text style={styles.Titlename}>Nobita kun</Text>
-                        <Text>nobita: send a video
-                        </Text>
-                        
-                        
-                    </Body>
-                     </ListItem>
-
-                     <ListItem avatar>
-                    <Left style={styles.Titlename}>
-                        <Thumbnail source={{uri: 'https://i.ytimg.com/vi/AvQr5Hu3c4A/maxresdefault.jpg'}}/>
-                    </Left>
-                    <Body>
-                        <Text style={styles.Titlename}>black man</Text>
-                        <Text>you: Tới lượt bạn rồi</Text>
-                        
-                    </Body>
-                     </ListItem>
-
-                     <ListItem avatar>
-                    <Left>
-                        <Thumbnail source={{uri: 'https://tse4.mm.bing.net/th?id=OIP.2f0oe7YiGo_uFeWjS0ijBgHaDt&pid=Api&P=0&w=318&h=160'}}/>
-                    </Left>
-                    <Body>
-                        <Text style={styles.Titlename}>Thanos</Text>
-                        <Text>Nos: send a ticker</Text>
-                    </Body>
-                                  </ListItem>
-                       {/* <Button
-                          info
-                          onPress={() => navigation.push("Notifications")}>
-                          <Text>Go again....! </Text>
-                      </Button>
-
-                      <Button
-                          warning
-                          onPress={() => navigation.navigate("Details")}>
-                          <Text>Go to detais </Text>
-                      </Button>
-
-                      <Button
-                          success
-                          onPress={() => navigation.goBack()}>
-                          <Text>Go Back </Text>
-                      </Button> */}
-                </Content>
-
+              
                 
+            <Header>
+                <Title>subjects</Title>
+            </Header>
 
+            <Content>
+            <TextInput style={styles.input} autoFocus={true} placeholder="Add subjects for event..." onChangeText = {subject => setSubject(subject)} />
+            <Button block success style={{backgroundColor:"#694fad", marginTop: 20, width: 300, marginLeft: 37, marginBottom: 15}} onPress={()=>addSubject()}>
+              <Text style={{color:"#fff", fontWeight:"bold"}}>Creat</Text>
+            </Button>
+                   
 
-            </Container>
+            <View style={{flex:1, }}>
+     
+              <FlatList 
+                data={list}
+                renderItem={renderItem}
+                keyExtractor={item => item.id}
+              />
+            </View>
+            
+                
+             
+              
+            </Content>
+            
+
+        </Container>
         );
     }
 
 
 
-const styles = StyleSheet.create({
- 
-  Titlename: {
-    color: 'grey',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
+    const styles = StyleSheet.create({
+      item: {
+        backgroundColor: '#b3b3ff',
+        padding: 10,
+        marginVertical: 8,
+        marginHorizontal: 16,
+        width: 345,
+        height: 50,
+        justifyContent:"center"
+      },
+      title: {
+        fontSize: 15,
+        color: "#fff",
+        fontWeight:"bold"
+      },
+      input:{
+        height:45,
+        borderWidth:1,
+        width: 340,
+        borderRadius: 10,
+        borderColor: "#85a3e0",
+        marginLeft: 17,
+        marginBottom: 10,
+        marginTop: 10
 
-});
+      }
+    });
+    
+    
+  
 
-
+  

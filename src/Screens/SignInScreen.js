@@ -20,7 +20,7 @@
     import Feather from 'react-native-vector-icons/Feather';
 
 
-    import { Container, Header, Body, Title, Content, Button,Icon, Footer, FooterTab, Left,             Right, Form, Item, Label, Input, Thumbnail, Separator, ListItem } 
+    import { Container, Header, Body, Title, Content, Button,Icon, Footer, FooterTab, Left, Right, Form, Item, Label, Input, Thumbnail, Separator, ListItem } 
              from 'native-base';
 
     import {FirebaseContext} from '../Context/FirebaseContext';
