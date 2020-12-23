@@ -119,7 +119,7 @@
                       autoCapitalize="none"
                       style= {styles.textInput}
                       onChangeText = {password => setPassword(password.trim())}
-                        value = {password}
+                      value = {password}
                      
                       
                   />

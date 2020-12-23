@@ -308,6 +308,7 @@ createNoteMultie: async (note) => {
       id: note.idrandom,
       idevent: note.idevent,
       idsubject: note.idsubject,
+      date: note.date,
       content: note.content,
       notePhotoUrl
     })

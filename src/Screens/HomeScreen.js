@@ -14,6 +14,7 @@ import {Swipeable} from 'react-native-gesture-handler'
 import firebase from 'firebase';
 import "firebase/firestore";
 
+
 //
 import {FirebaseContext} from '../Context/FirebaseContext';
 import {UserContext} from '../Context/UserContext';
@@ -27,6 +28,7 @@ const timeToString = (time) => {
 
 export default function HomeScreen ({navigation}) {
   const [items, setItems] = useState({});
+  //const [items, setItems] = useState(dataref);
 
   const [addEvent, setAddEvent] = useState(false);
   //const [updateEvent, setUpdateEvent] = useState(false)
@@ -40,21 +42,87 @@ export default function HomeScreen ({navigation}) {
   const  firebaseoj = React.useContext(FirebaseContext);
   const [_, setUser] = React.useContext(UserContext);
 
-  useEffect(()=>{
-    setTimeout(async () => {
-      const _iduser = _.uid
-    firebase.firestore().collection("events").where("userid", "==",_iduser).get().then(function(querySnapshot) {
-      querySnapshot.forEach(function(doc) {
-        if(timealarm==timestart)
-          alert("da den gio lam nhiem nhiem vu")
-      });
-    })
-    .catch(function(error) {
-        console.log("Error getting documents: ", error);
-    });
+//   useEffect(()=>{
+//     setTimeout(async () => {
+//       const _iduser = _.uid
+//     firebase.firestore().collection("events").where("userid", "==",_iduser).get().then(function(querySnapshot) {
+//       querySnapshot.forEach(function(doc) {
+//         if(timealarm==timestart)
+//           alert("da den gio lam nhiem nhiem vu")
+//       });
+//     })
+//     .catch(function(error) {
+//         console.log("Error getting documents: ", error);
+//     });
 
-    },300)},[])
+//     },300)},[])
 
+
+
+// useEffect(()=>{
+//   setTimeout(async () => {
+//     const _iduser = _.uid
+//     firebase.firestore().collection("events").where("userid", "==",_iduser)
+//     .onSnapshot(function(querySnapshot)  {
+//         var listEvents = [];
+//         querySnapshot.forEach(function(doc) {
+//             listEvents.push({ id:doc.id,...doc.data()} )
+//         });
+      
+      
+//        // return listEvents convert [] to {}
+
+//         var data = listEvents;
+//           let items1
+//           let dates = []
+//           let arrayDate = []
+          
+          
+
+
+//           data.forEach(item => {
+//               dates.push(item.date)
+//           })
+
+//           dates.map(d => {
+//               let arrayName = []
+              
+//               data.map(item => {
+//                   if (item.date === d) {
+                      
+                      
+//                       let objsDate={}
+//                       objsDate.name = (item.name)
+//                       objsDate.color = (item.color)
+//                       objsDate.date= (item.date)
+//                       objsDate.id= (item.id)
+//                       objsDate.timestart = (item.timestart)
+//                       objsDate.timeend = (item.timeend)
+//                       objsDate.idsubject = (item.idsubject)
+//                       arrayName.push(objsDate)
+
+//                       arrayDate[d] = arrayName
+//                   }
+//               })
+//           })
+//           items1 = { uid: _iduser, ...arrayDate }
+
+      
+//           setItems(items1)
+
+
+          
+//          // setLoading(false)
+            
+//     });
+//   },500)},[])
+
+  
+
+    
+
+
+ 
 useEffect(()=>{
   setTimeout(async () => {
     const _iduser = _.uid
@@ -66,6 +134,7 @@ useEffect(()=>{
         });
       
       
+        
        // return listEvents convert [] to {}
 
         var data = listEvents;
@@ -153,7 +222,27 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
  
 
   
+  // const loadItems = (day) => {
+  //   setTimeout(() => {
+  //     for (let i = -15; i < 85; i++) {
+  //       const time = day.timestamp + i * 24 * 60 * 60 * 1000;
+  //       const strTime = timeToString(time);
+  //       if (!items[strTime]) {
+  //         items[strTime] = [];   
+  //       }
+  //     }
+  //     const newItems = {};
+  //     Object.keys(items).forEach((key) => {
+  //       newItems[key] = items[key];
+  //     });
+  //     setItems(newItems);
+  //   }, 1000);
+  // };
+  
+  
+  
   const loadItems = (day) => {
+  
     setTimeout(() => {
       for (let i = -15; i < 85; i++) {
         const time = day.timestamp + i * 24 * 60 * 60 * 1000;
@@ -169,6 +258,9 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
       setItems(newItems);
     }, 1000);
   };
+  
+
+
   
 
   const [itemActive, setitemActive] = useState('')
@@ -190,7 +282,7 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
           </Modal>
 
           <TouchableOpacity style={{marginTop: 15, }} >
-          <Swipeable  renderRightActions={rightAction}>
+          <Swipeable  renderRightActions={(_, dragX)=>rightAction(dragX, item.id)}>
           <Card style={{ marginBottom:-9, height:70, borderTopRightRadius: 10}}>
             <CardItem style={{height: 70 ,  backgroundColor: item.color,  borderTopRightRadius: 10}} button onPress={()=>tonggleAddNote(item)}>
             <Body>
@@ -203,7 +295,6 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
           </Swipeable>
           </TouchableOpacity>
        
-
         
       </View>
       
@@ -211,14 +302,14 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
   };
 
 
-  const rightAction = (progress, dragX) =>{
+  const rightAction = (dragX, id) =>{
     const scale = dragX.interpolate({
         inputRange: [-100,0],
         outputRange: [1,0], 
         extrapolate: "clamp"
     })
     return(
-      <TouchableOpacity style={{height: 60, marginTop: 5, marginRight: 5, borderLeftWidth:8, borderLeftColor:"red"}}>
+      <TouchableOpacity style={{height: 60, marginTop: 5, marginRight: 5, borderLeftWidth:8, borderLeftColor:"red"}} onPress={()=>deleteEvent(id)}>
         <Animated.View style={{flex:1, backgroundColor: "red", justifyContent:"center", alignItems:"center", width:120, height:40
 ,borderTopRightRadius: 10}}>
         <AntDesign name="delete" size={22} color="#fff" />
@@ -228,7 +319,42 @@ const currentTime = currentHour.slice(currentHour.length-2) +":"+currentMi.slice
     )
   } 
 
+  const deleteEvent =(id)=>{
+    firebase.firestore().collection("events").doc(id).delete().then(function() {
+      console.log("Document event deleted!");
+      
+      //delete note
+    
 
+      firebase.firestore().collection("notes").doc(id).delete().then(function(){
+        console.log("delete note success")
+      })
+
+
+      //----delete note of event
+
+      const _iduser = _.uid
+      firebase.firestore().collection("events").where("userid", "==",_iduser)
+      .get()
+      .then(function(querySnapshot) {
+        var listevents = []
+          querySnapshot.forEach(function(doc) {
+           listevents.push({ id:doc.id,...doc.data()} )
+          });
+          setList(listevents)
+      
+      })
+      .catch(function(error) {
+          console.log("Error getting documents: ", error);
+      });
+
+      const newList = list.filter(item=>item.id!==id)
+    //  setItems(newList)
+      }).catch(function(error) {
+          console.error("Error removing document: ", error);
+      });
+  
+  }
 
  
   return (

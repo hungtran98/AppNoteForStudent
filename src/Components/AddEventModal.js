@@ -25,8 +25,6 @@ const AddEventModal = (props) => {
 
 
 
-
-
 const addList = () => {
   const _iduser = _.uid
   const idrandom = "Ev" + Math.random().toString().substr(2,8)
@@ -247,8 +245,6 @@ const showDateEnd = () => {
          placeholderTextColor="#666666"
          autoCapitalize="none"
         />
-
-
           <Picker
             mode="dropdown"
             iosIcon={<Icon name="arrow-down" />}
@@ -364,6 +360,8 @@ const showDateEnd = () => {
    </KeyboardAvoidingView>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {

@@ -1,6 +1,6 @@
 import React, { Component, useEffect, useState } from 'react';
-import { Image, KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, FlatList } from 'react-native';
-import { Container, Header, View, DeckSwiper, Card, CardItem, Thumbnail,  Left, Body, Button, Icon  } from 'native-base';
+import { Image, KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, FlatList, View, TextInput } from 'react-native';
+//import { Container, Header, View, DeckSwiper, Card, CardItem, Thumbnail,  Left, Body, Button, Icon  } from 'native-base';
 import { AntDesign } from '@expo/vector-icons';
 
 import firebase from 'firebase';
@@ -17,43 +17,65 @@ import {UserContext} from '../Context/UserContext';
 const Garellyimages = (props) =>{
 
     const [listImg, setListImg] = useState([])
+    const [img, setImg] = useState([])
     const [name, setName] = useState([])
+    const [notesub, setNoteSub] = useState([])
+    const [datesub, setDatesub] = useState([])
+    const [dt,setDt] = useState()
+    
 
     const {itemActive}=props
 
     useEffect(()=>{
       setTimeout(async () => {
-    
-      //  const _iduser = _.uid
-        firebase.firestore().collection("notes").where("idsubject", "==",itemActive)
+        
+      
+        firebase.firestore().collection("notes").where("idsubject", "==",itemActive).orderBy("date")
         .get()
         .then(function(querySnapshot) {
           var listimgs = []
+          var listnotes = []
           
             querySnapshot.forEach(function(doc) {
     
              listimgs.push(...doc.data().notePhotoUrl )
+
             
+
+          //    firebase.firestore().collection("events").doc(doc.data().idevent).get().then(function(doc) {
+
+          //     setDt(doc.data().date)
+          // }).catch(function(error) {
+          //     console.log("Error getting document:", error);
+          // });
+          
+            
+        //  console.log("d-------------t3",dt3)
+             listnotes.push({dt: dt,...doc.data()})
+          
+             console.log("sssssssssssssss",listnotes)
+                
+              
             });
             setListImg(listimgs)
-           // console.log("resulaffffffffffffffffft: ",listimgs)
-            // var data = listimgs;
-            // let data1 = []
-            // data1 = [data[0].
-            // console.log("dasfaf",data1)
+            setNoteSub(listnotes)
+            console.log("----------------------",listnotes)
+
+
+
            
-  
+          
+   
         })
         .catch(function(error) {
             console.log("Error getting documents: ", error);
         });
-      },1000)},[])
+      },300)},[])
 
-      
+
+     
       useEffect(()=>{
         setTimeout(async () => {
-      
-          
           firebase.firestore().collection("subjects").where("id", "==",itemActive)
           .get()
           .then(function(querySnapshot) {
@@ -73,8 +95,76 @@ const Garellyimages = (props) =>{
       
   //flatlist for list images
   
-  const Item = ({ url }) => (
+  // const Item = ({ url }) => (
+  //   <View style={styles.profilePhotoContainers}>
+      
+  //      <ImageModal
+  //         resizeMode="contain"
+  //         imageBackgroundColor="#fff"
+  //         style={{
+  //           width: 150,
+  //           height: 153,
+            
+  //         }}
+  //         source={{
+  //           uri: url
+  //         }}
+  //       />
+  //        {/* <Image
+      
+  //       source={{
+  //         uri: url
+  //       }}
+  //     /> */}
+  //   </View>
+  // );
+
+  // const renderItem = ({ item }) => (
+  //   <Item url={item.url} />
+  // );
+
+  //------------------
+  
+
+
+
+  //--render flat list note and image
+  
+  // const Item = ({ url }) => (
+  //   <View style={styles.profilePhotoContainers}>
+      
+  //      <ImageModal
+  //         resizeMode="contain"
+  //         imageBackgroundColor="#fff"
+  //         style={{
+  //           width: 150,
+  //           height: 153,
+            
+  //         }}
+  //         source={{
+  //           uri: url
+  //         }}
+  //       />
+  //        {/* <Image
+      
+  //       source={{
+  //         uri: url
+  //       }}
+  //     /> */}
+  //   </View>
+  // );
+
+  const renderItem = ({ item }) => (
+    <Item notes={item} />
+  );
+
+  const renderImages = ({item}) => (
+    <Imgs  images={item} />
+  );
+
+  const Imgs = ({ images }) => (
     <View style={styles.profilePhotoContainers}>
+      
        <ImageModal
           resizeMode="contain"
           imageBackgroundColor="#fff"
@@ -84,7 +174,7 @@ const Garellyimages = (props) =>{
             
           }}
           source={{
-            uri: url
+            uri: images.url
           }}
         />
          {/* <Image
@@ -96,12 +186,47 @@ const Garellyimages = (props) =>{
     </View>
   );
 
-  const renderItem = ({ item }) => (
-    <Item url={item.url} />
-  );
+     
+  const Item = ({notes}) => {
+ 
+    let imgsub = notes.notePhotoUrl
+   
+    return(
+    <View style={styles.notescontainer}>
+      <View style={styles.notes}>
+    
+      <View style={{ borderWidth:1,
+      marginBottom: 10, width: 100, padding: 5, borderRadius: 10, backgroundColor:"#00b359", borderColor: "#00b359",}}>
+      <Text style={{color: "#fff", fontStyle:"italic", fontSize: 10,
+      }}>{notes.date}</Text>
+      </View>
+       
+        <Text style={{color: "#fff", fontWeight: "bold"}}>{notes.content}</Text>
+      </View>
+      
+      <View style={{flex:1}}>
+      <FlatList
+            
+            data={imgsub}
+            horizontal={true}
+            renderItem={renderImages}
+           // numColumns={2}
+            keyExtractor={item => item.id}
+          />
+    
+      </View>
+      
+    </View>
 
-  //------------------
+    )
+  };
+
   
+
+
+
+
+  //----------------------
     return(
         
         <KeyboardAvoidingView style={styles.container} behavior="padding">
@@ -113,10 +238,10 @@ const Garellyimages = (props) =>{
        <View style={{flex:1,marginBottom: 20}}>
           <FlatList
             
-            data={listImg}
+            data={notesub}
             horizontal={false}
             renderItem={renderItem}
-           numColumns={2}
+         //   numColumns={2}
             keyExtractor={item => item.id}
           />
           </View>
@@ -133,11 +258,15 @@ const Garellyimages = (props) =>{
             })
           } */}
 
+      
         
       </KeyboardAvoidingView>
      
     )
 }
+
+
+
 
 
 const styles = StyleSheet.create({
@@ -152,8 +281,8 @@ const styles = StyleSheet.create({
     },
     profilePhotoContainers: {
       backgroundColor: '#e1e2e6',
-      width: 140,
-      height: 160,
+      width: 120,
+      height: 140,
       alignSelf: 'center',
       marginTop: 5,
       overflow: 'hidden',
@@ -171,7 +300,23 @@ const styles = StyleSheet.create({
       color: "#293d3d",
       marginBottom: 15
 
+    },
+    notescontainer: {
+      height:250,
+      borderWidth: 2, 
+      borderColor: "#339980", 
+      marginBottom: 10,
+      borderRadius: 10,
+      backgroundColor: "#339980",
+      shadowRadius: 20
+    },
+    notes: {
+      marginLeft: 10,
+      marginTop: 10
+
     }
+
+
 
 });
 

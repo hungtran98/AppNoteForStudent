@@ -40,6 +40,7 @@ const AddNoteModal = (props) => {
   const [images, setImages] = useState([])
   const [idevent, setIdEvent] = useState(itemActive.id)
   const [countimage, setCountImage] = useState(0)
+  const [date, setDate] = useState(itemActive.date)
 
 
  
@@ -64,6 +65,10 @@ const AddNoteModal = (props) => {
   //     });
   //   },200)},[])
   
+
+
+  const [notezz, setNotezz]  = useState([])
+
   useEffect(()=>{
     setTimeout(async () => {
   
@@ -79,6 +84,7 @@ const AddNoteModal = (props) => {
              setImages(doc.data().notePhotoUrl)
              setCountImage(images.length)
            //  setIdSubject(doc.data().idsubject)
+           setNotezz(doc.data())
 
           });
       })
@@ -213,15 +219,16 @@ const AddNoteModal = (props) => {
   
   //---------------creat and update multie images--------------------
 
+
   const createNoteMultie = async () => {
     //setLoading(true);
     const idrandom = "Note" + Math.random().toString().substr(2,8)
     setIdNote(idrandom)
     
-    const note = {idevent,idrandom, idsubject, content, notePhoto, countimage };
+    const note = {idevent,idrandom, idsubject, content, notePhoto, countimage, date };
 
     
-    
+     
     try {
       const creactenote = await firebaseoj.createNoteMultie(note);
       firebase.firestore().collection("notes").where("idevent", "==",itemActive.id)
@@ -234,6 +241,7 @@ const AddNoteModal = (props) => {
            //  setIdEv(doc.data().idevent)
              setImages(doc.data().notePhotoUrl)
              setCountImage(images.length)
+            
 
           });
       })
@@ -254,10 +262,8 @@ const AddNoteModal = (props) => {
   const updateNoteMultie = async () => {
    
 
-    //const countimages = images.length()
-    const note = {countimage, images, idevent,content, notePhoto };
+    const note = {countimage, images, idevent,content, notePhoto, date};
 
-    //console.log(countimages,"asafsgg")
 
 
     
@@ -326,24 +332,50 @@ const AddNoteModal = (props) => {
   
   //flatlist for list images
   
-  const Item = ({ url }) => (
+  const Item = ({ item, url}) => {
+    const deleteImg=(url) =>{
+      const newPhotoUrl = notezz.notePhotoUrl.filter(photo=>photo.url !== url)
+      console.log("ssss", newPhotoUrl)
+      const newNotezz = {...notezz,notePhotoUrl: newPhotoUrl}
+      setNotezz(newNotezz)
+      
+      //update image
+      firebase.firestore().collection("notes").doc(notezz.idevent).update({
+      
+        notePhotoUrl: newPhotoUrl
+      })
+
+    }
+    const nt = firebase.firestore().collection("notes").doc(itemActive.id)
+    
+    return(
     <View style={styles.profilePhotoContainers}>
+      <TouchableOpacity style={{ position:"absolute",   top: 5, right:5,  backgroundColor:"#85adad", borderRadius:28, width: 25, height: 25, justifyContent: "center", alignItems:"center" }} 
+      onPress={()=>deleteImg(url)}>
+        <AntDesign name="close" size ={20} color="#fff"  />
+      </TouchableOpacity>
+
+      <View style={{flex:1, zIndex: -1}}>
         <ImageModal
           resizeMode="contain"
           imageBackgroundColor="#b3b3ff"
           style={{
-            width: 120,
-            height: 150,
+            width: 150,
+            height: 153,   
           }}
           source={{
-            uri: url
+            uri: item.url
           }}
         />
+      </View>
+    
     </View>
-  );
 
-  const renderItem = ({ item }) => (
-    <Item url={item.url} />
+    )
+  };
+
+  const renderItem = ({ item}) => (
+    <Item item={item}  index={item.id} url={item.url}  />
   );
 
   //------------------
@@ -366,12 +398,13 @@ const AddNoteModal = (props) => {
        <TouchableOpacity style={{position:"absolute", top: 80, right:5, backgroundColor:"#694fad", borderRadius:28, width: 28, height:           30, alignItems:"center", justifyContent:"center"}} onPress={()=>tonggleEvent()}>
         <AntDesign name="edit" size ={20} color="#fff"  />
       </TouchableOpacity>
-
+ 
       <ScrollView style={styles.scrollView}>
 
   <Text style={styles.title}>{name}</Text>
+  <Text style={styles.date}>{itemActive.date} | {itemActive.timestart}-{itemActive.timeend}</Text>
          <Form>
-            <Textarea autoFocus={true} placeholder="Note something ..." style={{borderColor: "#ccb3ff", borderRadius: 6}} rowSpan={12} bordered value={content} onChangeText={content => setContent(content)}
+            <Textarea autoFocus={true} placeholder="Note something ..." style={{ borderLeftColor:"#e6e6ff", borderColor: "#fff", backgroundColor: "#f0f5f5", borderRadius: 10}} rowSpan={12} bordered value={content} onChangeText={content => setContent(content)}
 />
           </Form>
 
@@ -397,7 +430,7 @@ const AddNoteModal = (props) => {
                       <Text style={{color: "#fff", fontWeight:"bold"}}>create</Text>
 
                       </TouchableOpacity>)
-        
+          
         }
           </View>
          <View style={styles.profilePhotoContainer}>
@@ -441,7 +474,7 @@ const AddNoteModal = (props) => {
         <View style={{flex:1,marginBottom: 20}}>
           <FlatList
             
-            data={images}
+            data={notezz.notePhotoUrl}
             horizontal={true}
             renderItem={renderItem}
             keyExtractor={item => item.id}
@@ -479,7 +512,7 @@ const styles = StyleSheet.create({
   title :{
     fontSize: 18, 
     fontWeight: "800",
-    color: "black",
+    color: "#05375a",
     alignSelf:"center",
     marginBottom: 16
   },
@@ -489,6 +522,7 @@ const styles = StyleSheet.create({
     height: 50,
     marginTop: 8,
     paddingHorizontal: 16,
+    backgroundColor: "#f0f5f5"
     
   },
   create:{
@@ -551,7 +585,7 @@ const styles = StyleSheet.create({
   },
   profilePhotoContainers: {
     backgroundColor: '#e1e2e6',
-    width: 120,
+    width: 130,
     height: 160,
     borderRadius: 6,
     alignSelf: 'center',
@@ -560,7 +594,9 @@ const styles = StyleSheet.create({
     shadowRadius:20,
     shadowColor:"#000",
     shadowOpacity:1,
-    marginHorizontal: 10
+    marginHorizontal: 10,
+    position:"relative",
+   
   },
   defaultPhoto: {
     alignItems: 'center',
@@ -584,6 +620,10 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginHorizontal: 16,
   },
+  date:{
+    fontStyle: "italic",
+    color: "#94b8b8"
+  }
  
 
   

@@ -6,11 +6,9 @@ import { AntDesign } from '@expo/vector-icons';
 
 
 //import { createStackNavigator } from '@react-navigation/stack';
-
+  
 
 import {Swipeable} from 'react-native-gesture-handler'
-
-
 
 
 import firebase from 'firebase';
@@ -29,7 +27,6 @@ export default function SearchScreen({navigation}) {
   const [idSubject, setIdSubject] = useState('')
   const [_, setUser] = React.useContext(UserContext);
   const [list, setList] = useState([])
-
 
   useEffect(()=>{
     setTimeout(async () => {
@@ -54,23 +51,22 @@ export default function SearchScreen({navigation}) {
     },1000)},[])
 
 
+
     const Item = ({ name, idsub}) => (
-      <Swipeable  renderRightActions={rightAction}>
-        <Button style={styles.item} onPress={()=>tonggleShowimg(name, idsub)}>
+      <Swipeable  renderRightActions={(_, dragX)=>rightAction(dragX,name)}>
+        <Button style={styles.item} onPress={()=>tonggleShowimg(name, idsub)} >
           <Text style={styles.title}>{idsub}</Text>
         </Button>
       </Swipeable>
     );
 
 
-
-
-
     
-  const [show, setShow] = useState(false)  
+  const [show, setShow] = useState(false) 
+
   const tonggleShow =()=>{
     setShow(!show)
-   
+
   }
   const [itemActive, setitemActive] = useState({})
 
@@ -85,40 +81,51 @@ export default function SearchScreen({navigation}) {
       <Modal animationType="slide" visible={show} onRequestClose={()=>tonggleShow()}>
         <Garellyimages closeimg={()=>tonggleShowimg()} itemActive = {itemActive}/>
       </Modal>
-
       <Item name={item.id} idsub = {item.name} />
     </View>
     );
     }
    
-
-    const rightAction = (progress, dragX) =>{
+  
+    const rightAction = (dragX, name) =>{
       const scale = dragX.interpolate({
           inputRange: [-100,0],
-          outputRange: [1,0], 
+          outputRange: [1,0.9], 
           extrapolate: "clamp"
       }) 
+
+      const opacitys = dragX.interpolate({
+        inputRange: [-100, -20, 0],
+        outputRange: [1, 0.9, 0],
+        extrapolate: "clamp"
+      })
       return(
-        <TouchableOpacity style={{height: 50, marginTop:8, marginRight:20,}}>
-          <Animated.View style={{flex:1, backgroundColor: "red", justifyContent:"center", alignItems:"center", width:100, height:100, borderBottomEndRadius: 10
-        , borderTopRightRadius: 10 }}>
+        <TouchableOpacity style={{height: 50, marginTop:8, marginRight:20,}} onPress={()=>deleteSubject(name)}>
+          <Animated.View style={[styles.deletebutton,{ opacity: opacitys}]}>
+            
           <AntDesign name="delete" size={22} color="#fff" />
-         
           </Animated.View>
         </TouchableOpacity>
       )
+  
+      
+    }
+
+
+   
+    const deleteSubject =(name)=>{
+      firebase.firestore().collection("subjects").doc(name).delete().then(function() {
+        console.log("Document subject deleted!");
+        const newList = list.filter(item=>item.id!==name)
+        setList(newList)
+        }).catch(function(error) {
+            console.error("Error removing document: ", error);
+        });
+    
     }
 
 
     
- 
-
-
-
-
-
-
-
   const addSubject = () => {
     const _iduser = _.uid
     const idrandom = "Sub" + Math.random().toString().substr(2,8)
@@ -143,7 +150,7 @@ export default function SearchScreen({navigation}) {
               
                 
             <Header>
-                <Title>subjects</Title>
+                <Title style={{marginTop:15}}>subjects</Title>
             </Header>
 
             <Content>
@@ -158,13 +165,11 @@ export default function SearchScreen({navigation}) {
               <FlatList 
                 data={list}
                 renderItem={renderItem}
-                keyExtractor={item => item.id}
+                keyExtractor={item => item.id}                
               />
             </View>
             
-                
-             
-              
+    
             </Content>
             
 
@@ -173,7 +178,7 @@ export default function SearchScreen({navigation}) {
     }
 
 
-
+    
     const styles = StyleSheet.create({
       item: {
         backgroundColor: '#b3b3ff',
@@ -198,6 +203,11 @@ export default function SearchScreen({navigation}) {
         marginLeft: 17,
         marginBottom: 10,
         marginTop: 10
+
+      },
+      deletebutton: {
+        flex:1, backgroundColor: "red", justifyContent:"center", alignItems:"center", width:100, height:100, borderBottomEndRadius: 10
+        , borderTopRightRadius: 10, 
 
       }
     });
