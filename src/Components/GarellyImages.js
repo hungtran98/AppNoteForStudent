@@ -1,5 +1,5 @@
 import React, { Component, useEffect, useState } from 'react';
-import { Image, KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, FlatList, View, TextInput } from 'react-native';
+import { Image, KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, FlatList, View, TextInput, ImageBackground } from 'react-native';
 //import { Container, Header, View, DeckSwiper, Card, CardItem, Thumbnail,  Left, Body, Button, Icon  } from 'native-base';
 import { AntDesign } from '@expo/vector-icons';
 
@@ -29,37 +29,56 @@ const Garellyimages = (props) =>{
     useEffect(()=>{
       setTimeout(async () => {
         
-      
-        firebase.firestore().collection("notes").where("idsubject", "==",itemActive).orderBy("date")
-        .get()
+     
+        firebase.firestore().collection("notes").where("idsubject", "==",itemActive).get()
         .then(function(querySnapshot) {
           var listimgs = []
           var listnotes = []
           
+            
             querySnapshot.forEach(function(doc) {
-    
+              
+           //  dates = new Date(doc.data().date.getTime())
              listimgs.push(...doc.data().notePhotoUrl )
-
-            
-
-          //    firebase.firestore().collection("events").doc(doc.data().idevent).get().then(function(doc) {
-
-          //     setDt(doc.data().date)
-          // }).catch(function(error) {
-          //     console.log("Error getting document:", error);
-          // });
+             
           
-            
-        //  console.log("d-------------t3",dt3)
-             listnotes.push({dt: dt,...doc.data()})
+  
+             listnotes.push({...doc.data() })
           
-             console.log("sssssssssssssss",listnotes)
+        //     console.log("sssssssssssssss",listnotes)
                 
               
             });
+          var dates = []
+          listnotes.map(item=>{
+            
+          dates.push(item.dstmp)
+          })
+
+        //   var dates2 = []
+        //  dates.map(item=>{
+        //   var datesnum = item.split("-")
+        //   var num = datesnum[0] + datesnum[1] + datesnum[2]
+        //   dates2.push(num)
+        //  })
+      
+          dates.sort()
+
+          var listnotes2 =[]
+          dates.map(item=>{
+            listnotes.map(itm=>{
+              if(item===itm.dstmp){
+                listnotes2.push({content:itm.content, date: itm.date, notePhotoUrl: itm.notePhotoUrl})
+              }
+            })
+          })
+
+
+
+           //----------------------------------------
             setListImg(listimgs)
-            setNoteSub(listnotes)
-            console.log("----------------------",listnotes)
+            setNoteSub(listnotes2)
+           // console.log("------------------------",listnotes2)
 
 
 
@@ -185,6 +204,7 @@ const Garellyimages = (props) =>{
       /> */}
     </View>
   );
+ 
 
      
   const Item = ({notes}) => {
@@ -196,7 +216,7 @@ const Garellyimages = (props) =>{
       <View style={styles.notes}>
     
       <View style={{ borderWidth:1,
-      marginBottom: 10, width: 100, padding: 5, borderRadius: 10, backgroundColor:"#00b359", borderColor: "#00b359",}}>
+      marginBottom: 10, width: 100, padding: 5, borderRadius: 10, backgroundColor:"#4775d1", borderColor: "#4775d1",}}>
       <Text style={{color: "#fff", fontStyle:"italic", fontSize: 10,
       }}>{notes.date}</Text>
       </View>
@@ -212,6 +232,7 @@ const Garellyimages = (props) =>{
             renderItem={renderImages}
            // numColumns={2}
             keyExtractor={item => item.id}
+            showsHorizontalScrollIndicator={false}
           />
     
       </View>
@@ -224,12 +245,13 @@ const Garellyimages = (props) =>{
   
 
 
-
+ 
 
   //----------------------
-    return(
+    return( 
         
-        <KeyboardAvoidingView style={styles.container} behavior="padding">
+       // <KeyboardAvoidingView style={styles.container} behavior="padding">
+          <ImageBackground source={require("../../assets/bgsubject.jpg")} style={styles.container}>
         <TouchableOpacity style={{position:"absolute", top: 30, right:5, backgroundColor:"#694fad", borderRadius:28, width: 30, height: 30, alignItems:"center", justifyContent:"center"}} onPress={props.closeimg}>
            <AntDesign name="close" size ={20} color="#fff"  />
         </TouchableOpacity>
@@ -243,6 +265,9 @@ const Garellyimages = (props) =>{
             renderItem={renderItem}
          //   numColumns={2}
             keyExtractor={item => item.id}
+            
+            
+            showsVerticalScrollIndicator={false}
           />
           </View>
           {/* <PhotoGrid source={listImg} onPressImage={source => renderItem(source)} /> */}
@@ -258,9 +283,9 @@ const Garellyimages = (props) =>{
             })
           } */}
 
-      
+      </ImageBackground>
         
-      </KeyboardAvoidingView>
+    //  </KeyboardAvoidingView>
      
     )
 }
@@ -276,7 +301,7 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       padding: 24,
       backgroundColor: "#fff",
-      marginRight: 10,
+      
       
     },
     profilePhotoContainers: {
@@ -293,22 +318,24 @@ const styles = StyleSheet.create({
       borderRadius:10,
       borderWidth:2,
       borderColor: "#e6e6ff"
+
       
     },
     title:{
       fontWeight: "bold",
-      color: "#293d3d",
+      color: "#fff",
       marginBottom: 15
 
     },
     notescontainer: {
       height:250,
       borderWidth: 2, 
-      borderColor: "#339980", 
+      borderColor: "#b3cce6", 
       marginBottom: 10,
       borderRadius: 10,
-      backgroundColor: "#339980",
-      shadowRadius: 20
+      backgroundColor: "#b3cce6",
+      shadowRadius: 20,
+      
     },
     notes: {
       marginLeft: 10,

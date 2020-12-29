@@ -1,7 +1,11 @@
-import React, { Component, useContext} from 'react';
+import React, { Component, useContext, useState, useEffect} from 'react';
 import { Container, Header, Body, Title, Content, Button,Icon, Footer, FooterTab, Left, Right,
         Card, CardItem, Thumbnail, Separator, ListItem } from 'native-base';
-import {Text, StyleSheet} from 'react-native';
+import {Text, StyleSheet, Modal, Animated, TouchableOpacity} from 'react-native';
+
+import EditProfile from '../Components/EditProfile'
+import firebase from 'firebase';
+import "firebase/firestore";
 
 
 import {UserContext} from '../Context/UserContext';
@@ -13,6 +17,31 @@ export default function ProfileScreen() {
 
   const [user, setUser] = useContext(UserContext);
   const firebaseoj = useContext(FirebaseContext);
+  const [name, setName] = useState(user.username)
+  const [photos, setPhoto] = useState('')
+  const [id, setId] = useState(user.uid)
+
+  ////---------------------load profile  
+  useEffect(()=>{
+    setTimeout(async () => {
+          firebase.firestore().collection("users").doc(id).get().then(function(doc) {
+              if (doc.exists) {
+                  console.log("Document data:", doc.data());
+                  setName(doc.data().username)
+                  setPhoto(doc.data().profilePhotoUrl)
+              } else {
+                  // doc.data() will be undefined in this case
+                  console.log("No such document!");
+              }
+          }).catch(function(error) {
+              console.log("Error getting document:", error);
+          });
+    },200)},[])
+  
+
+  
+
+  ////-------------------
 
 
   const logOut = async () =>{
@@ -23,6 +52,26 @@ export default function ProfileScreen() {
     }
   }
 
+
+  const [editProfile, setEditProfile] = useState(false)
+  
+  const [itemActive, setitemActive] = useState()
+  
+     
+  const tonggleProfile =()=>{
+    setEditProfile(!editProfile)
+  }
+
+
+  const tonggleEditProfile = () =>{
+    setitemActive({id, photos, name})
+    tonggleProfile()
+
+  }
+
+   
+
+
     
 
 
@@ -32,6 +81,9 @@ export default function ProfileScreen() {
 
         return(
             <Container>
+              <Modal animationType="slide" visible={editProfile} onRequestClose={()=>tonggleEditProfile()}>
+                <EditProfile closeModals={()=>tonggleEditProfile()} itemActive={itemActive} />
+              </Modal>
                <Header>
                 <Left>
                 </Left>
@@ -46,12 +98,19 @@ export default function ProfileScreen() {
             <Content>
                 <CardItem>
                 <Left>
+                  {/* <TouchableOpacity onPress={()=>tonggleEditProfile()}>
+                      <Thumbnail source={user.profilePhotoUrl === "default" ? require("../../assets/avatar_default.jpg")
+                       : {uri: user.profilePhotoUrl} } />
+                  </TouchableOpacity> */}
+                  <TouchableOpacity onPress={()=>tonggleEditProfile()}>
+                      <Thumbnail source={photos === "default" ? require("../../assets/avatar_default.jpg")
+                       : {uri:photos}} />
+                  </TouchableOpacity>
                   
-                    <Thumbnail source={user.profilePhotoUrl === "default" ? require("../../assets/avatar_default.jpg")
-                     : {uri: user.profilePhotoUrl} } />
+                  
                   
                   <Body>
-        <Text style={{fontSize: 17, fontWeight: "bold", color: '#293d3d'}}>{user.username}</Text>
+        <Text style={{fontSize: 17, fontWeight: "bold", color: '#293d3d'}}>{name}</Text>
                   </Body>
                 </Left>
               </CardItem>

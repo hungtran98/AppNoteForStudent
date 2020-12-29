@@ -28,7 +28,7 @@ const Firebase = {
 
   },
 
-
+//----create user
   createUser: async (user) => {
     try {
       await firebase.auth().createUserWithEmailAndPassword(user.email, user.password);
@@ -107,6 +107,85 @@ const Firebase = {
     });
 
   },
+
+  //-----------------create user
+
+
+  //-------update user
+  updateUser: async (userUpdate) => {
+    try {
+     
+      await db.collection('users').doc(userUpdate.id).update({
+        username: userUpdate.name,
+      })
+      
+      if(userUpdate.notePhoto) {
+        profilePhotoUrl = await Firebase.uploadProfilePhotos(userUpdate.notePhoto, userUpdate.id);
+         
+
+      }
+
+
+    
+      return {...userUpdate, profilePhotoUrl};
+    }
+    catch(error){
+      console.log("Error @updateUser: ", error.message);
+
+    }
+  },
+
+
+
+
+  uploadProfilePhotos: async (uri, id) => {
+    //const uid = Firebase.getCurrentUser().uid;
+
+
+    try{
+
+        const photo = await Firebase.getBlob(uri);
+        const imageRef = firebase.storage().ref('profilePhotos').child(id);
+      
+        await imageRef.put(photo);
+
+
+        const url = await imageRef.getDownloadURL();
+
+
+        await db.collection("users").doc(id).update({
+          profilePhotoUrl: url,
+        })
+        return url;
+      
+       } catch(error){
+      console.log("Error @uploadProfilePhoto: ", error);
+    }
+  }
+  ,
+
+  getBlob: async (uri) => {
+    return await new Promise( (resolve, reject)=> {
+      const xhr = new XMLHttpRequest();
+
+      xhr.onload =() =>{
+        resolve(xhr.response);
+      }
+
+      xhr.onerror = () =>{
+        reject( new TypeError("Network  request failed."))
+
+      }
+
+      xhr.responseType = "blob";
+      xhr.open("GET",uri, true);
+      xhr.send(null);
+    });
+
+  },
+
+
+  //-------------------update user
 
   signIn: async (email, password) => {
     return firebase.auth().signInWithEmailAndPassword(email, password);
@@ -304,12 +383,17 @@ createNoteMultie: async (note) => {
     const uid = Firebase.getCurrentUser().uid;
 
     let notePhotoUrl = [];
+    let date2 = note.date;
+    let date3 = date2.split("-");
+    let dstmp = date3[0]+date3[1]+date3[2] 
+
     await db.collection('notes').doc(note.idevent).set({
       id: note.idrandom,
       idevent: note.idevent,
       idsubject: note.idsubject,
       date: note.date,
       content: note.content,
+      dstmp:dstmp,
       notePhotoUrl
     })
     

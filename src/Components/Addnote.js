@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Text, View, StyleSheet, Image, Modal, KeyboardAvoidingView , FlatList, TouchableOpacity, TextInput, ScrollView, Platform, Button} from 'react-native';
+import { ImageBackground, Text, View, StyleSheet, Image, Modal, KeyboardAvoidingView , FlatList, TouchableOpacity, TextInput, ScrollView, Platform, Button} from 'react-native';
 import {AntDesign} from "@expo/vector-icons"
 import { Container, Header, Content, Textarea, Form } from "native-base";
 
@@ -386,7 +386,8 @@ const AddNoteModal = (props) => {
 
 
   return (
-   <KeyboardAvoidingView style={styles.container} behavior="padding">
+ //  <KeyboardAvoidingView style={styles.container} behavior="padding">
+ <ImageBackground style={styles.container} source={require("../../assets/bgnote4.jpg")} >
    <Modal animationType="slide" visible={updateEvent} onRequestClose={()=>tonggleUpdateEvent()}>
             <UpdateEventModal closeModals={()=>tonggleUpdateEvent()}  itemActive={itemActive} />
      </Modal>
@@ -399,12 +400,12 @@ const AddNoteModal = (props) => {
         <AntDesign name="edit" size ={20} color="#fff"  />
       </TouchableOpacity>
  
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
 
   <Text style={styles.title}>{name}</Text>
   <Text style={styles.date}>{itemActive.date} | {itemActive.timestart}-{itemActive.timeend}</Text>
          <Form>
-            <Textarea autoFocus={true} placeholder="Note something ..." style={{ borderLeftColor:"#e6e6ff", borderColor: "#fff", backgroundColor: "#f0f5f5", borderRadius: 10}} rowSpan={12} bordered value={content} onChangeText={content => setContent(content)}
+            <Textarea autoFocus={true} placeholder="Note something ..." style={{ borderColor: "#fff", backgroundColor: "#f0f5f5", borderRadius: 10}} rowSpan={12} bordered value={content} onChangeText={content => setContent(content)}
 />
           </Form>
 
@@ -478,6 +479,7 @@ const AddNoteModal = (props) => {
             horizontal={true}
             renderItem={renderItem}
             keyExtractor={item => item.id}
+            showsHorizontalScrollIndicator={false}
           />
           </View>
 
@@ -491,8 +493,8 @@ const AddNoteModal = (props) => {
 
          
       </ScrollView>
-      
-   </KeyboardAvoidingView>
+     </ImageBackground>
+  //</KeyboardAvoidingView>
 
 
 
